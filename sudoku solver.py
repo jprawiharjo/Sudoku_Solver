@@ -5,11 +5,11 @@ Created on Tue Oct 21 11:50:18 2014
 @author: jerry.prawiharjo
 """
 
-FN = "Sudoku1.txt"
-FN2 = "Sudoku1-sol.txt"
+import os
+import sys
 
-def lstArgSort(Lst):
-    return sorted(range(len(Lst)), key=Lst.__getitem__)
+inFN = "Sudoku1.txt"
+outFN = "Sudoku1-sol.txt"
 
 def Metric(self,inGrid):
     SumRow = 0
@@ -75,20 +75,40 @@ class Sudoku(object):
 
     def read_csv(self,FileName):
         self.ProblemList = []
-        Wf = open(FileName)
-        LinesRead = Wf.readlines()
-        kcount = 1
-        for line in LinesRead:
-            TempArray = map(int,line.rstrip('\n').split(','))
-            kcount +=1
-            if len(TempArray) == 9 :
-                self.ProblemList.extend(TempArray)
+        if os.path.exists(FileName):
+            Wf = open(FileName)
+            LinesRead = Wf.readlines()
+            kcount = 1
+            for line in LinesRead:
+                TempArray = map(int,line.rstrip('\n').split(','))
+                kcount +=1
+                if len(TempArray) == 9:
+                    self.ProblemList.extend(TempArray)
+                else:
+                    print "Line %i in the input file has incorrect array length, or does not come in csv format" %kcount
+                    return False
+            if len(self.ProblemList) == 81: 
+                print "Input file successfully parsed"
             else:
-                print "Line %i in file has incorrect array length" %kcount
-        if len(self.ProblemList) == 81: print "File parsed"
-        self.__assignDict()
-        self.ProblemGrid = self.__convertToGrid(self.ProblemList)
-        Wf.close()
+                print "Input file has incorrect Sudoku row size"
+                return False
+            self.__assignDict()
+            self.ProblemGrid = self.__convertToGrid(self.ProblemList)
+            Wf.close()
+            return True
+        else:
+            return False
+
+    def CheckOutputFile(self,FN):
+        if os.path.exists(FN):
+            strask = "Output file exist, Overwrite file? [y/n] :"
+            user_input = raw_input(strask)
+            if user_input.upper() == 'Y':
+                print ""
+                return True
+            else:
+                print ""
+                return False
 
     def write_csv(self,FileName):
         self.ProblemList = []
@@ -396,7 +416,23 @@ class Sudoku(object):
             print Nempty
         self.__SolutionDictToList()
 
-A = Sudoku()
-A.read_csv(FN)
-A.Solve()
-A.write_csv(FN2)
+
+if __name__ == "__main__":
+    A = Sudoku()
+
+    arg = sys.argv
+    if len(arg) == 3:
+        inFN = str(arg[1])
+        outFN = str(arg[2])
+    elif len(arg) == 2:
+        inFN = arg[1]
+        fn, ext = os.path.splitext(inFN)
+        outFN = fn + '-sol' + ext
+    else:
+        print "No command line arguments. Using example files Sudoku1.txt"
+    
+    if A.CheckOutputFile(outFN):
+        print "Output will be saved to " + outFN
+        if A.read_csv(inFN):
+            A.Solve()
+    #A.write_csv(outFN)
