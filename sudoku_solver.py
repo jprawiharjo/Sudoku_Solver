@@ -8,8 +8,8 @@ Created on Tue Oct 21 11:50:18 2014
 import os
 import sys
 
-inFN = "Sudoku1.txt"
-outFN = "Sudoku1-sol.txt"
+inFN = "sudoku3.txt"
+outFN = "sudoku3-sol.txt"
 
 class Sudoku(object):
     __X = 'ABCDEFGHI'
@@ -57,30 +57,31 @@ class Sudoku(object):
         if os.path.exists(FileName):
             Wf = open(FileName)
             LinesRead = Wf.readlines()
-            kcount = 1
+            kcount = 0
             for line in LinesRead:
                 TempArray = map(int,line.rstrip('\n').split(','))
                 kcount +=1
                 if len(TempArray) == 9:
                     self.__ProblemList.extend(TempArray)
                 else:
-                    print "Line %i in the input file has incorrect array length, or does not come in csv format" %kcount
+                    print "Error parsing input file: Line %i in the input file has incorrect array length, or does not come in csv format" %kcount
                     return False
             if len(self.__ProblemList) == 81: 
                 print "Input file successfully parsed"
             else:
-                print "Input file has incorrect Sudoku row size"
+                print "Error parsing input file: Input file has incorrect Sudoku row size"
                 return False
             self.__assignDict()
             self.__ProblemGrid = self.__convertToGrid(self.__ProblemList)
             Wf.close()
             return True
         else:
+            print "Input file does not exist!"
             return False
 
     def CheckOutputFile(self,FN):
         if os.path.exists(FN):
-            strask = "Output file exist, Overwrite file? [y/n] :"
+            strask = "Output file exists, Overwrite file? [y/n] : "
             user_input = raw_input(strask)
             if user_input.upper() == 'Y':
                 print ""
@@ -113,7 +114,7 @@ class Sudoku(object):
             self.__SudokuDict[kx] = self.__ProblemList[kc]
             kc += 1
 
-    def Singularity(self):
+    def __Singularity(self):
         replaced = True
         while replaced:
             replaced = False
@@ -127,7 +128,7 @@ class Sudoku(object):
                         replaced = True
         return
 
-    def Hitman(self):
+    def __Hitman(self):
         for kx in self.__SudokuBoxes:
             Nrange = range(1,10)
             Box = []
@@ -161,9 +162,9 @@ class Sudoku(object):
                                             Removed = True
                                         elif len(self.__SudokuDict[ki]) == 1:
                                             self.__SudokuDict[ki] = self.__SudokuDict[ki][0]
-            return Removed
+            return
 
-    def FindTheRealMcCoy(self):
+    def __FindTheRealMcCoy(self):
         Found = True
         while Found:
             Found = False
@@ -184,9 +185,9 @@ class Sudoku(object):
                                         self.__SudokuDict[ki] = kb
                                         Found = True
             
-            self.RemoveDoppelGaenger()
+            self.__RemoveDoppelGaenger()
 
-    def RemoveTheFakes(self):
+    def __RemoveTheFakes(self):
         for mm in range(0,2):
             for kx in self.__SudokuBoxes:
                 if mm == 0:
@@ -230,9 +231,9 @@ class Sudoku(object):
                                     self.__SudokuDict[kc] = sorted(set(self.__SudokuDict[kc]) - kz[1])
                                 if len(self.__SudokuDict[kc]) == 1:
                                     self.__SudokuDict[kc] = self.__SudokuDict[kc][0]
-            self.RemoveDoppelGaenger()
+            self.__RemoveDoppelGaenger()
 
-    def RemoveDoppelGaenger(self):
+    def __RemoveDoppelGaenger(self):
         Removed = True
         while Removed:
             Removed = False
@@ -248,7 +249,7 @@ class Sudoku(object):
                             if len(self.__SudokuDict[ky]) == 1:
                                 self.__SudokuDict[ky] = self.__SudokuDict[ky][0]
                         
-    def DoubleDragon(self):
+    def __DoubleDragon(self):
         Removed = True
         while Removed:
             Removed = False
@@ -269,7 +270,7 @@ class Sudoku(object):
                                 self.__SudokuDict[ky] = sorted(set(self.__SudokuDict[ky]) - set(Members[0]))
                                 Removed = True
     
-    def CountEmptyCell(self):
+    def __CountEmptyCell(self):
         k = 0
         for kx in self.__SudokuBoxes:
             for ki in kx:
@@ -285,24 +286,26 @@ class Sudoku(object):
         self.__SolutionGrid = self.__convertToGrid(self.__SolutionList)
     
     def Solve(self):
-        self.Singularity()
-        self.Hitman()
+        self.__Singularity()
+        self.__Hitman()
         for kk in range(10):
-            self.FindTheRealMcCoy()
-            self.DoubleDragon()
-            self.RemoveTheFakes()
-            Nempty = self.CountEmptyCell()
+            self.__FindTheRealMcCoy()
+            self.__DoubleDragon()
+            self.__RemoveTheFakes()
+            Nempty = self.__CountEmptyCell()
+            print Nempty
             if Nempty == 0:
                 break
         self.__SolutionDictToList()
-        if self.Metric(self.__SolutionGrid) == 0:
-            print "Solution Found!"
-            return True
+        if Nempty == 0:        
+            if self.__Metric(self.__SolutionGrid) == 0:
+                print "Solution Found!"
+                return True
         else:
             print "Failed to find solution!"
             return False
 
-    def Metric(self,inGrid):
+    def __Metric(self,inGrid):
         SumRow = 0
         for k in range(0,9): 
             SumRow += abs(sum(inGrid[k]) - 45)
@@ -334,9 +337,8 @@ if __name__ == "__main__":
         fn, ext = os.path.splitext(inFN)
         outFN = fn + '-sol' + ext
     else:
-        print "No command line arguments. Using example files Sudoku1.txt"
+        print "No command line arguments. Using example files %s" %inFN
 
-    print outFN    
     if A.CheckOutputFile(outFN):
         print "Output will be saved to " + outFN
         if A.read_csv(inFN):
