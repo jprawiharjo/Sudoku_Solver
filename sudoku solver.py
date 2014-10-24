@@ -88,6 +88,8 @@ class Sudoku(object):
             else:
                 print ""
                 return False
+        else:
+            return True    
 
     def write_csv(self,FileName):
         self.__ProblemList = []
@@ -98,7 +100,7 @@ class Sudoku(object):
                 temp = temp[1:-1]
                 Wf.write(temp + '\r\n')
             Wf.close()
-            print "Successfully saved output file."
+            print "Successfully saved output file"
             return True
         except:
             print "Failed to save output file."
@@ -153,11 +155,12 @@ class Sudoku(object):
                                     Indexer = [x+ki[1] for x in self.__X]
                                 Indexer.remove(ki)
                                 for kR in Indexer:
-                                    if not isinstance(self.__SudokuDict[kR],list):
-                                        self.__SudokuDict[ki] = sorted(set(self.__SudokuDict[ki]) - set([self.__SudokuDict[kR]]))
-                                        Removed = True
-                                if len(self.__SudokuDict[ki]) == 1:
-                                    self.__SudokuDict[ki] = self.__SudokuDict[ki][0]
+                                    if not isinstance(self.__SudokuDict[kR],list) and isinstance(self.__SudokuDict[ki],list):
+                                        if len(self.__SudokuDict[ki]) > 1:
+                                            self.__SudokuDict[ki] = sorted(set(self.__SudokuDict[ki]) - set([self.__SudokuDict[kR]]))
+                                            Removed = True
+                                        elif len(self.__SudokuDict[ki]) == 1:
+                                            self.__SudokuDict[ki] = self.__SudokuDict[ki][0]
             return Removed
 
     def FindTheRealMcCoy(self):
@@ -332,8 +335,9 @@ if __name__ == "__main__":
         outFN = fn + '-sol' + ext
     else:
         print "No command line arguments. Using example files Sudoku1.txt"
-    
-    if True:#A.CheckOutputFile(outFN):
+
+    print outFN    
+    if A.CheckOutputFile(outFN):
         print "Output will be saved to " + outFN
         if A.read_csv(inFN):
             A.Solve()
