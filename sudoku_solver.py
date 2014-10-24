@@ -9,8 +9,8 @@ import os
 import sys
 from collections import *
 
-inFN = "sudoku1.txt"
-outFN = "sudoku1-sol.txt"
+inFN = "sudoku4.txt"
+outFN = "sudoku4-sol.txt"
 
 class Sudoku(object):
     __X = 'ABCDEFGHI'
@@ -152,30 +152,26 @@ class Sudoku(object):
                 self.__SudokuDict[kx[Box.index(0)]] = Nrange[:]
                 Box[Box.index(0)] = Nrange[:]
 
-        Removed = True
-        while Removed:
-            Removed = False
-            for kx in self.__SudokuBoxes: 
-                for ki in kx:
-                    if isinstance(self.__SudokuDict[ki],list):
-                        if len(self.__SudokuDict[ki]) == 1:
-                            self.__SudokuDict[ki] = self.__SudokuDict[ki][0]
-                        else:
-                            for mm in range(2):
-                                if mm == 0:
-                                    Indexer = [ki[0]+x for x in self.__Y]
-                                elif mm == 1:
-                                    Indexer = [x+ki[1] for x in self.__X]
-                                Indexer.remove(ki)
-                                for kR in Indexer:
-                                    if not isinstance(self.__SudokuDict[kR],list) and isinstance(self.__SudokuDict[ki],list):
-                                        if len(self.__SudokuDict[ki]) > 1:
-                                            self.__SudokuDict[ki] = sorted(set(self.__SudokuDict[ki]) - set([self.__SudokuDict[kR]]))
-                                            Removed = True
-                                        elif len(self.__SudokuDict[ki]) == 1:
-                                            self.__SudokuDict[ki] = self.__SudokuDict[ki][0]
-                                        #elif len(self.__SudokuDict[ki]) == 0:
-                                        #    self.__SudokuDict[ki] = 0
+        for kx in self.__SudokuBoxes: 
+            for ki in kx:
+                if isinstance(self.__SudokuDict[ki],list):
+                    if len(self.__SudokuDict[ki]) == 1:
+                        self.__SudokuDict[ki] = self.__SudokuDict[ki][0]
+                    else:
+                        for mm in range(2):
+                            if mm == 0:
+                                Indexer = [ki[0]+x for x in self.__Y]
+                            elif mm == 1:
+                                Indexer = [x+ki[1] for x in self.__X]
+                            Indexer.remove(ki)
+                            for kR in Indexer:
+                                if not isinstance(self.__SudokuDict[kR],list) and isinstance(self.__SudokuDict[ki],list):
+                                    if len(self.__SudokuDict[ki]) > 1:
+                                        self.__SudokuDict[ki] = sorted(set(self.__SudokuDict[ki]) - set([self.__SudokuDict[kR]]))
+                                    elif len(self.__SudokuDict[ki]) == 1:
+                                        self.__SudokuDict[ki] = self.__SudokuDict[ki][0]
+                                    elif len(self.__SudokuDict[ki]) == 0:
+                                        self.__SudokuDict[ki] = 0
 
     def __FindTheRealMcCoy(self):
         Found = True
@@ -263,8 +259,8 @@ class Sudoku(object):
                             self.__SudokuDict[ky] = sorted(set(self.__SudokuDict[ky]) - set(Members))
                             if len(self.__SudokuDict[ky]) == 1:
                                 self.__SudokuDict[ky] = self.__SudokuDict[ky][0]
-                            #elif len(self.__SudokuDict[ky]) == 0:
-                            #    self.__SudokuDict[ky] = 0
+                            elif len(self.__SudokuDict[ky]) == 0:
+                                self.__SudokuDict[ky] = 0
                         
     def __DoubleDragon(self):
         Removed = True
