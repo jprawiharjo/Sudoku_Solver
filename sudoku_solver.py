@@ -7,9 +7,10 @@ Created on Tue Oct 21 11:50:18 2014
 
 import os
 import sys
+from collections import *
 
-inFN = "sudoku3.txt"
-outFN = "sudoku3-sol.txt"
+inFN = "sudoku1.txt"
+outFN = "sudoku1-sol.txt"
 
 class Sudoku(object):
     __X = 'ABCDEFGHI'
@@ -79,6 +80,16 @@ class Sudoku(object):
             print "Input file does not exist!"
             return False
 
+    def parse_string_grid(self,inString):
+        self.__ProblemList = []
+        if len(inString) == 81:
+            for k in inString:
+                if k == '.':
+                    k = '0'
+                self.__ProblemList.append(int(k))
+        self.__assignDict()
+        self.__ProblemGrid = self.__convertToGrid(self.__ProblemList)
+
     def CheckOutputFile(self,FN):
         if os.path.exists(FN):
             strask = "Output file exists, Overwrite file? [y/n] : "
@@ -113,6 +124,7 @@ class Sudoku(object):
         for kx in self.__SudokuList:
             self.__SudokuDict[kx] = self.__ProblemList[kc]
             kc += 1
+        self.__SudokuDict = OrderedDict(sorted(self.__SudokuDict.items(), key = lambda t:t[0]))
 
     def __Singularity(self):
         replaced = True
@@ -162,7 +174,8 @@ class Sudoku(object):
                                             Removed = True
                                         elif len(self.__SudokuDict[ki]) == 1:
                                             self.__SudokuDict[ki] = self.__SudokuDict[ki][0]
-            return
+                                        #elif len(self.__SudokuDict[ki]) == 0:
+                                        #    self.__SudokuDict[ki] = 0
 
     def __FindTheRealMcCoy(self):
         Found = True
@@ -231,6 +244,8 @@ class Sudoku(object):
                                     self.__SudokuDict[kc] = sorted(set(self.__SudokuDict[kc]) - kz[1])
                                 if len(self.__SudokuDict[kc]) == 1:
                                     self.__SudokuDict[kc] = self.__SudokuDict[kc][0]
+                                elif len(self.__SudokuDict[kc]) == 0:
+                                    self.__SudokuDict[kc] = 0
             self.__RemoveDoppelGaenger()
 
     def __RemoveDoppelGaenger(self):
@@ -248,6 +263,8 @@ class Sudoku(object):
                             self.__SudokuDict[ky] = sorted(set(self.__SudokuDict[ky]) - set(Members))
                             if len(self.__SudokuDict[ky]) == 1:
                                 self.__SudokuDict[ky] = self.__SudokuDict[ky][0]
+                            #elif len(self.__SudokuDict[ky]) == 0:
+                            #    self.__SudokuDict[ky] = 0
                         
     def __DoubleDragon(self):
         Removed = True
@@ -269,6 +286,8 @@ class Sudoku(object):
                             if isinstance(self.__SudokuDict[ky],list):
                                 self.__SudokuDict[ky] = sorted(set(self.__SudokuDict[ky]) - set(Members[0]))
                                 Removed = True
+                                if len(self.__SudokuDict[ky]) ==0:
+                                    self.__SudokuDict[ky] = 0
     
     def __CountEmptyCell(self):
         k = 0
@@ -285,19 +304,66 @@ class Sudoku(object):
                 self.__SolutionList.append(self.__SudokuDict[ky])
         self.__SolutionGrid = self.__convertToGrid(self.__SolutionList)
     
-    def Solve(self):
-        self.__Singularity()
-        self.__Hitman()
+    def __LogicSolve(self):
+        N0 = 0
         for kk in range(10):
             self.__FindTheRealMcCoy()
             self.__DoubleDragon()
             self.__RemoveTheFakes()
             Nempty = self.__CountEmptyCell()
-            print Nempty
-            if Nempty == 0:
+            if Nempty == N0:
                 break
+            else:
+                N0 = Nempty
+        if Nempty == 0:
+            return True
+        else:
+            return False
+            
+    def __BruteForce(self):
+        Odict, Qout = self.__Branch()
+        
+        for Iq in Qout[1]:
+            self.__SudokuDict[Qout[0]] = Iq
+            self.__RemoveDoppelGaenger()
+            self.__LogicSolve()
+            if self.__CountEmptyCell() == 0:
+                self.__SolutionDictToList()
+                if self.__Metric(self.__SolutionGrid) == 0:
+                    return True
+                else:
+                    self.__SudokuDict = Odict.copy()
+            else:
+                if not(self.__BruteForce()):
+                    self.__SudokuDict = Odict.copy()
+                else:
+                    return True
+        return False
+        
+    def __Branch(self):
+        Original = self.__SudokuDict.copy()
+        Q = self.__SudokuDict.iteritems()
+        while True:
+            try:
+                kI = next(Q)
+            except StopIteration:
+                break
+            if isinstance(kI[1],list):
+                break
+        
+        return Original,kI
+    
+    def Solve(self):
+        self.__Singularity()
+        self.__Hitman()
+        print 'Attempting to solve by logic...'
+        Nempty = self.__LogicSolve()
+        if not Nempty:
+            print 'OK, that didn\'t work. Let\'s use \'The Force\'...'
+            Nempty = self.__BruteForce()
         self.__SolutionDictToList()
-        if Nempty == 0:        
+        
+        if Nempty:        
             if self.__Metric(self.__SolutionGrid) == 0:
                 print "Solution Found!"
                 return True
@@ -339,7 +405,7 @@ if __name__ == "__main__":
     else:
         print "No command line arguments. Using example files %s" %inFN
 
-    if A.CheckOutputFile(outFN):
+    if True:#A.CheckOutputFile(outFN):
         print "Output will be saved to " + outFN
         if A.read_csv(inFN):
             A.Solve()
