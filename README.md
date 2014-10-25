@@ -1,7 +1,7 @@
 Sudoku_Solver
 =============
 
-A Sudoku Solver in Python\n
+A Sudoku Solver in Python
 
 usage: python sudoku_solver.py "input.txt" "output.txt"
 
@@ -52,6 +52,8 @@ sudoku1.txt : problem provided by John Joo
 sudoku2.txt : Sudoku problem by Arto Inkala in 2006 [http://usatoday30.usatoday.com/news/offbeat/2006-11-06-sudoku_x.htm]
 
 sudoku3.txt : Another sudoku problem by Arto Inkala. More difficult than sudoku2.txt [http://www.mirror.co.uk/news/weird-news/worlds-hardest-sudoku-can-you-242294]
+
+sudoku4.txt : Yet another sudoku problem
 
 
 Note:

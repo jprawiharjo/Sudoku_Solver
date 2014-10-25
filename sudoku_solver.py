@@ -15,23 +15,23 @@ outFN = "sudoku3-sol.txt"
 class Sudoku(object):
     __X = 'ABCDEFGHI'
     __Y = 'abcdefghi'
-    __SudokuList = []
+    __SudokuKeyList = []
     __ProblemList = []
     __SudokuBoxes = []
     MinClue = 17
     
     def __init__(self):
         self.__makeList()
-        self.__SudokuGrid = self.__convertToGrid(self.__SudokuList)
+        self.__SudokuGrid = self.__convertToGrid(self.__SudokuKeyList)
         self.__makeBoxes()
         self.__SudokuIterables = [self.__SudokuGrid, zip(*self.__SudokuGrid), self.__SudokuBoxes]
         self.Initialized = False
         self.Solved = False
     
     def __makeList(self):
-        self.__SudokuList = []
+        self.__SudokuKeyList = []
         for ch in self.__X:
-            self.__SudokuList.extend([ch+a for a in self.__Y])
+            self.__SudokuKeyList.extend([ch+a for a in self.__Y])
 
     def __makeBoxes(self):
         self.__SudokuBoxes = []
@@ -144,7 +144,7 @@ class Sudoku(object):
         if os.path.exists(FN):
             print "Output file exists, it will be overwritten"
         else:
-            print FN + "will be created"
+            print FN + " will be created"
         return True
             
     def write_csv(self,FileName,verbose = False, Solution = True):
@@ -168,7 +168,7 @@ class Sudoku(object):
     def __assignDict(self):
         self.__SudokuDict = {}
         kc = 0
-        for kx in self.__SudokuList:
+        for kx in self.__SudokuKeyList:
             self.__SudokuDict[kx] = self.__ProblemList[kc]
             kc += 1
         self.__SudokuDict = OrderedDict(sorted(self.__SudokuDict.items(), key = lambda t:t[0]))
@@ -185,7 +185,6 @@ class Sudoku(object):
                     if Member.count(0) == 1:
                         self.__SudokuDict[kx[Member.index(0)]] = 45 - sum(Member)
                         replaced = True
-        return
 
     def __ReduceProblemSpace(self):
         for kx in self.__SudokuBoxes:
@@ -246,7 +245,6 @@ class Sudoku(object):
                                     if kb in self.__SudokuDict[ki]:
                                         self.__SudokuDict[ki] = kb
                                         Found = True
-            
             self.__RemoveDuplicates()
 
     def __EliminateOccupiedValues(self):
@@ -501,7 +499,6 @@ if __name__ == "__main__":
         print "No command line arguments. Using example files %s" %inFN
 
     if A.CheckOutputFileExists(outFN):
-        print "Output will be saved to " + outFN
         if A.read_csv(inFN):
             A.Solve(verbose = True)
             A.write_csv(outFN)

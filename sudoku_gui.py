@@ -9,7 +9,6 @@ from Tkinter import *
 from tkFileDialog import *
 import sudoku_solver
 import time
-import threading
 
 class StatusBar(Frame):
     def __init__(self, master):
@@ -26,7 +25,6 @@ class StatusBar(Frame):
         self.label.update_idletasks()
 
 class MainForm(Frame):
-  
     def __init__(self, parent):
         Frame.__init__(self, parent)   
          
@@ -104,7 +102,7 @@ class MainForm(Frame):
     def onSave(self):
         if self.Sudoku.Solved:
             self.status.set("Saving solution grid...")
-            filename = asksaveasfilename(**self.file_opt)
+            filename = asksaveasfilename(title = 'Saving Solution',**self.file_opt)
             if filename != "":
                 if self.Sudoku.write_csv(filename):
                     self.status.set("Solution successfully saved")
@@ -114,7 +112,7 @@ class MainForm(Frame):
                     self.status.set("Output file not saved. No filename supplied")
         elif self.Sudoku.Initialized:
             self.status.set("Saving current Sudoku grid")
-            filename = asksaveasfilename(**self.file_opt)
+            filename = asksaveasfilename(title = 'Saving Current Grid',**self.file_opt)
             if filename != "":
                 if self.Sudoku.write_csv(filename,Solution = False):
                     self.status.set("Current grid is successfully saved")
