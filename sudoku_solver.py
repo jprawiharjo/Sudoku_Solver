@@ -9,8 +9,8 @@ import os
 import sys
 from collections import *
 
-inFN = "sudoku4.txt"
-outFN = "sudoku4-sol.txt"
+inFN = "sudoku3.txt"
+outFN = "sudoku3-sol.txt"
 
 class Sudoku(object):
     __X = 'ABCDEFGHI'
@@ -81,6 +81,7 @@ class Sudoku(object):
             return False
 
     def parse_string_grid(self,inString):
+        inString = inString.rstrip('\n')
         self.__ProblemList = []
         if len(inString) == 81:
             for k in inString:
@@ -101,8 +102,15 @@ class Sudoku(object):
                 print ""
                 return False
         else:
-            return True    
+            return True
 
+    def CheckOutputFileExists(self,FN):
+        if os.path.exists(FN):
+            print "Output file exists, it will be overwritten"
+        else:
+            print FN + "will be created"
+        return True
+            
     def write_csv(self,FileName):
         self.__ProblemList = []
         try:
@@ -247,8 +255,8 @@ class Sudoku(object):
     def __RemoveDoppelGaenger(self):
         Removed = True
         while Removed:
-            Removed = False
             for kI in self.__SudokuIterables:
+                Removed = False
                 for kx in kI:
                     Members = []
                     for ky in kx:
@@ -256,7 +264,10 @@ class Sudoku(object):
                             Members.append(self.__SudokuDict[ky])
                     for ky in kx:
                         if isinstance(self.__SudokuDict[ky],list):
+                            orig = self.__SudokuDict[ky][:]
                             self.__SudokuDict[ky] = sorted(set(self.__SudokuDict[ky]) - set(Members))
+                            if orig != self.__SudokuDict[ky]:
+                                Removed = True
                             if len(self.__SudokuDict[ky]) == 1:
                                 self.__SudokuDict[ky] = self.__SudokuDict[ky][0]
                             elif len(self.__SudokuDict[ky]) == 0:
@@ -265,8 +276,8 @@ class Sudoku(object):
     def __DoubleDragon(self):
         Removed = True
         while Removed:
-            Removed = False
             for kI in self.__SudokuIterables:
+                Removed = False
                 for kx in kI:
                     Index = []
                     Members = []
@@ -280,8 +291,10 @@ class Sudoku(object):
                         kxx = sorted(set(kxx) - set(Index))
                         for ky in kxx:
                             if isinstance(self.__SudokuDict[ky],list):
+                                orig = self.__SudokuDict[ky][:]
                                 self.__SudokuDict[ky] = sorted(set(self.__SudokuDict[ky]) - set(Members[0]))
-                                Removed = True
+                                if orig != self.__SudokuDict[ky]:
+                                    Removed = True
                                 if len(self.__SudokuDict[ky]) ==0:
                                     self.__SudokuDict[ky] = 0
     
@@ -401,7 +414,7 @@ if __name__ == "__main__":
     else:
         print "No command line arguments. Using example files %s" %inFN
 
-    if True:#A.CheckOutputFile(outFN):
+    if A.CheckOutputFileExists(outFN):
         print "Output will be saved to " + outFN
         if A.read_csv(inFN):
             A.Solve()
