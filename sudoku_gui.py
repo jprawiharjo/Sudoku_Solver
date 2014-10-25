@@ -13,7 +13,7 @@ import time
 class StatusBar(Frame):
     def __init__(self, master):
         Frame.__init__(self, master)
-        self.label = Label(self, bd=1, relief=RAISED, anchor=W)
+        self.label = Label(self, bd=1, relief=RAISED, anchor=W, font = ('Helvetica','14'))
         self.label.pack(fill=X)
 
     def set(self, format, *args):
@@ -48,15 +48,15 @@ class MainForm(Frame):
         
         
         toolbar = Frame(self,bd = 1, relief = RAISED)
+        self.Tfont = ('Helvetica','12','bold')
 
-
-        b = Button(toolbar, text = 'Open', width=6, command=self.onOpen)
+        b = Button(toolbar, text = 'Open', width=6, command=self.onOpen, font = self.Tfont)
         b.pack(side=LEFT, padx=2, pady=2)
         
-        b = Button(toolbar, text="Save", width=6, command=self.onSave)
+        b = Button(toolbar, text="Save", width=6, command=self.onSave, font = self.Tfont)
         b.pack(side=LEFT, padx=2, pady=2)
         
-        b = Button(toolbar, text="Solve", width=6, command=self.onSolve)
+        b = Button(toolbar, text="Solve", width=6, command=self.onSolve, font = self.Tfont)
         b.pack(side=LEFT, padx=2, pady=2)
 
         toolbar.pack(side=TOP, fill=X)
@@ -88,12 +88,15 @@ class MainForm(Frame):
             self.setSudokuProblemGrid()
 
     def onSave(self):
-        filename = asksaveasfilename(**self.file_opt)
-        if filename != "":
-            if self.Sudoku.write_csv(filename):
-                self.status.set("Output file successfully saved")
-            else:
-                self.status.set("Output file not saved. No solution available")
+        if self.Sudoku.Solved:
+            filename = asksaveasfilename(**self.file_opt)
+            if filename != "":
+                if self.Sudoku.write_csv(filename):
+                    self.status.set("Output file successfully saved")
+                else:
+                    self.status.set("Output file not saved. No solution available")
+        else:
+            self.status.set("!There is no solution to save!")
 
     def onSolve(self):
         Tstart = time.clock()
@@ -160,7 +163,7 @@ class MainForm(Frame):
 def main():
     root = Tk()
     app = MainForm(root)
-    root.geometry("590x650+200+100")
+    root.geometry("590x670+200+100")
     root.resizable(0,0)
     root.mainloop()
 

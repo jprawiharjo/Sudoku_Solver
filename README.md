@@ -25,3 +25,12 @@ examples:
 sudoku1.txt : problem provided by Insight
 sudoku2.txt : Sudoku problem by Arto Inkala in 2006 [http://usatoday30.usatoday.com/news/offbeat/2006-11-06-sudoku_x.htm]
 sudoku3.txt : Another sudoku problem by Arto Inkala. More difficult than sudoku2.txt [http://www.mirror.co.uk/news/weird-news/worlds-hardest-sudoku-can-you-242294]
+
+There is a sudoku solver in Python by Peter Norvig [http://norvig.com/sudoku.html]
+This solver has been checked against Norvig's problem collection 'hard.txt' and 'hardest.txt'
+Disclaimer: This code does not copy Norvig's algorithm in anyway.
+
+GUI usage:
+Open button: Open txt file that contains Sudoku problem in csv
+Solve button: Solves the loaded sudoku problem
+Save button: Saves the solution onto csv file.

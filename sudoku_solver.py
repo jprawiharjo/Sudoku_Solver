@@ -25,6 +25,7 @@ class Sudoku(object):
         self.__makeBoxes()
         self.__SudokuIterables = [self.__SudokuGrid, zip(*self.__SudokuGrid), self.__SudokuBoxes]
         self.Initialized = False
+        self.Solved = False
     
     def __makeList(self):
         self.__SudokuList = []
@@ -396,9 +397,11 @@ class Sudoku(object):
         if Nempty:        
             if self.__Metric(self.__SolutionGrid) == 0:
                 if verbose: print "Solution Found!"
+                self.Solved = True
                 return True
         else:
             if verbose: print "Failed to find solution!"
+            self.Solved = False
             return False
 
     def __Metric(self,inGrid):
