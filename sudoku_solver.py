@@ -18,12 +18,13 @@ class Sudoku(object):
     __SudokuList = []
     __ProblemList = []
     __SudokuBoxes = []
-
+    
     def __init__(self):
         self.__makeList()
         self.__SudokuGrid = self.__convertToGrid(self.__SudokuList)
         self.__makeBoxes()
         self.__SudokuIterables = [self.__SudokuGrid, zip(*self.__SudokuGrid), self.__SudokuBoxes]
+        self.Initialized = False
     
     def __makeList(self):
         self.__SudokuList = []
@@ -53,7 +54,7 @@ class Sudoku(object):
             print str(inGrid[kk][:]),
             print '\r'
 
-    def read_csv(self,FileName):
+    def read_csv(self,FileName,verbose = False):
         self.__ProblemList = []
         if os.path.exists(FileName):
             Wf = open(FileName)
@@ -65,20 +66,26 @@ class Sudoku(object):
                 if len(TempArray) == 9:
                     self.__ProblemList.extend(TempArray)
                 else:
-                    print "Error parsing input file: Line %i in the input file has incorrect array length, or does not come in csv format" %kcount
+                    if verbose: print "Error parsing input file: Line %i in the input file has incorrect array length, or does not come in csv format" %kcount
                     return False
             if len(self.__ProblemList) == 81: 
-                print "Input file successfully parsed"
+                if verbose: print "Input file successfully parsed"
             else:
-                print "Error parsing input file: Input file has incorrect Sudoku row size"
+                if verbose: print "Error parsing input file: Input file has incorrect Sudoku row size"
                 return False
             self.__assignDict()
             self.__ProblemGrid = self.__convertToGrid(self.__ProblemList)
             Wf.close()
+            self.Initialized = True
             return True
         else:
-            print "Input file does not exist!"
+            if verbose: print "Input file does not exist!"
             return False
+
+    def __getSudokuList(self):
+        return self.__ProblemList
+    
+    SudokuList = property(fget = __getSudokuList,fset = None)
 
     def parse_string_grid(self,inString):
         inString = inString.rstrip('\n')
@@ -111,7 +118,7 @@ class Sudoku(object):
             print FN + "will be created"
         return True
             
-    def write_csv(self,FileName):
+    def write_csv(self,FileName,verbose = False):
         self.__ProblemList = []
         try:
             Wf = open(FileName,'w')
@@ -120,10 +127,10 @@ class Sudoku(object):
                 temp = temp[1:-1]
                 Wf.write(temp + '\r\n')
             Wf.close()
-            print "Successfully saved output file"
+            if verbose: print "Successfully saved output file"
             return True
         except:
-            print "Failed to save output file."
+            if verbose: print "Failed to save output file."
             return False
 
     def __assignDict(self):
@@ -160,26 +167,32 @@ class Sudoku(object):
                 self.__SudokuDict[kx[Box.index(0)]] = Nrange[:]
                 Box[Box.index(0)] = Nrange[:]
 
-        for kx in self.__SudokuBoxes: 
-            for ki in kx:
-                if isinstance(self.__SudokuDict[ki],list):
-                    if len(self.__SudokuDict[ki]) == 1:
-                        self.__SudokuDict[ki] = self.__SudokuDict[ki][0]
-                    else:
-                        for mm in range(2):
-                            if mm == 0:
-                                Indexer = [ki[0]+x for x in self.__Y]
-                            elif mm == 1:
-                                Indexer = [x+ki[1] for x in self.__X]
-                            Indexer.remove(ki)
-                            for kR in Indexer:
-                                if not isinstance(self.__SudokuDict[kR],list) and isinstance(self.__SudokuDict[ki],list):
-                                    if len(self.__SudokuDict[ki]) > 1:
-                                        self.__SudokuDict[ki] = sorted(set(self.__SudokuDict[ki]) - set([self.__SudokuDict[kR]]))
-                                    elif len(self.__SudokuDict[ki]) == 1:
-                                        self.__SudokuDict[ki] = self.__SudokuDict[ki][0]
-                                    elif len(self.__SudokuDict[ki]) == 0:
-                                        self.__SudokuDict[ki] = 0
+        Removed = True
+        while Removed:
+            for kx in self.__SudokuBoxes:
+                Removed = False
+                for ki in kx:
+                    if isinstance(self.__SudokuDict[ki],list):
+                        if len(self.__SudokuDict[ki]) == 1:
+                            self.__SudokuDict[ki] = self.__SudokuDict[ki][0]
+                        else:
+                            for mm in range(2):
+                                if mm == 0:
+                                    Indexer = [ki[0]+x for x in self.__Y]
+                                elif mm == 1:
+                                    Indexer = [x+ki[1] for x in self.__X]
+                                Indexer.remove(ki)
+                                for kR in Indexer:
+                                    if not isinstance(self.__SudokuDict[kR],list) and isinstance(self.__SudokuDict[ki],list):
+                                        if len(self.__SudokuDict[ki]) > 1:
+                                            orig = self.__SudokuDict[ki]
+                                            self.__SudokuDict[ki] = sorted(set(self.__SudokuDict[ki]) - set([self.__SudokuDict[kR]]))
+                                            if orig != self.__SudokuDict[ki]:                                            
+                                                Removed = True
+                                        if len(self.__SudokuDict[ki]) == 1:
+                                            self.__SudokuDict[ki] = self.__SudokuDict[ki][0]
+                                        elif len(self.__SudokuDict[ki]) == 0:
+                                            self.__SudokuDict[ki] = 0
 
     def __FindTheRealMcCoy(self):
         Found = True
@@ -313,6 +326,14 @@ class Sudoku(object):
                 self.__SolutionList.append(self.__SudokuDict[ky])
         self.__SolutionGrid = self.__convertToGrid(self.__SolutionList)
     
+    def __getSudokuSolution(self):
+        if self.__SolutionList is not None:
+            return self.__SolutionList
+        else:
+            return
+        
+    SudokuSolution = property(fget = __getSudokuSolution)
+    
     def __LogicSolve(self):
         N0 = 0
         for kk in range(10):
@@ -362,22 +383,22 @@ class Sudoku(object):
         
         return Original,kI
     
-    def Solve(self):
+    def Solve(self, verbose=False):
         self.__Singularity()
         self.__Hitman()
-        print 'Attempting to solve by logic...'
+        if verbose: print 'Attempting to solve by logic...'
         Nempty = self.__LogicSolve()
         if not Nempty:
-            print 'OK, that didn\'t work. Let\'s use \'The Force\'...'
+            if verbose: print 'OK, that didn\'t work. Let\'s use \'The Force\'...'
             Nempty = self.__BruteForce()
         self.__SolutionDictToList()
         
         if Nempty:        
             if self.__Metric(self.__SolutionGrid) == 0:
-                print "Solution Found!"
+                if verbose: print "Solution Found!"
                 return True
         else:
-            print "Failed to find solution!"
+            if verbose: print "Failed to find solution!"
             return False
 
     def __Metric(self,inGrid):
@@ -399,6 +420,21 @@ class Sudoku(object):
                 SumBox += abs(a-45)
         return SumRow + SumCol + SumBox
 
+def LoadNorvigCollection(FN):
+    wf = open(FN)
+    Fl = wf.readlines()
+    k = 1
+    Failed = []
+    for line in Fl:
+        A.parse_string_grid(line)
+        if A.Solve():
+            print k, "Solved"
+        else:
+            print k, "Fail"
+            Failed.append(k)
+        k+=1
+    print Failed
+    wf.close()
 
 if __name__ == "__main__":
     A = Sudoku()
@@ -417,5 +453,6 @@ if __name__ == "__main__":
     if A.CheckOutputFileExists(outFN):
         print "Output will be saved to " + outFN
         if A.read_csv(inFN):
-            A.Solve()
+            A.Solve(verbose = True)
             A.write_csv(outFN)
+            
