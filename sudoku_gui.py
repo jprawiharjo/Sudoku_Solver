@@ -63,7 +63,7 @@ class MainForm(Frame):
         b.pack(side=LEFT, padx=2, pady=2)
 
         self.btnClear = Button(toolbar, text="User Input", width=8,
-                               command=self.onClear, font = self.Tfont)
+                               command=self.onUser, font = self.Tfont)
         self.btnClear.pack(side=LEFT, padx=2, pady=2)
 
         toolbar.pack(side=TOP, fill=X)
@@ -138,12 +138,13 @@ class MainForm(Frame):
         else:
             self.status.set("No problem found")
             
-    def onClear(self):
+    def onUser(self):
         self.UserInput = True
         self.SudokuList = [0] * 81
         self.clearSudokuGrid()
         self.status.set("User input mode. Directly input values in the grid")
         self.focus()
+        self.Sudoku.SudokuList = self.SudokuList
 
     def setSudokuSolutionGrid(self):
         SudokuList = self.Sudoku.SudokuSolution
@@ -248,8 +249,6 @@ class MainForm(Frame):
         else:
             self.canvas.itemconfigure(self.Grid[itemindex], fill=self.UnoccColor, outline=self.UnoccColor)
             self.SudokuList[itemindex] = 0
-        
-        self.Sudoku.SudokuList = self.SudokuList
 
 def main():
     root = Tk()
