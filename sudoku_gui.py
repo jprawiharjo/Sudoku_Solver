@@ -41,6 +41,9 @@ class MainForm(Frame):
         
         self.UserInput = False
         
+        self.UnoccColor = "#fb0"
+        self.OccColor = 'green'
+        
         self.file_opt = options = {}
         options['defaultextension'] = '.txt'
         options['filetypes'] = [('all files', '.*'), ('text files', '.txt')]
@@ -61,13 +64,9 @@ class MainForm(Frame):
         b = Button(toolbar, text="Solve", width=6, command=self.onSolve, font = self.Tfont)
         b.pack(side=LEFT, padx=2, pady=2)
 
-        self.btnClear = Button(toolbar, text="User", width=6,
+        self.btnClear = Button(toolbar, text="User Input", width=8,
                                command=self.onClear, font = self.Tfont)
         self.btnClear.pack(side=LEFT, padx=2, pady=2)
-
-        self.btnRead = Button(toolbar, text="Read", width=6, command=self.ReadGrid, 
-                              font = self.Tfont, state = DISABLED)
-        self.btnRead.pack(side=LEFT, padx=2, pady=2)
 
         toolbar.pack(side=TOP, fill=X)
         
@@ -100,23 +99,25 @@ class MainForm(Frame):
             else:
                 self.status.set("Failed to open file")
             self.setSudokuProblemGrid()
-            self.btnRead.configure(state = DISABLED)
             self.UserInput = False
 
     def onSave(self):
         if self.Sudoku.Solved:
+            self.status.set("Saving solution grid...")
             filename = asksaveasfilename(**self.file_opt)
             if filename != "":
                 if self.Sudoku.write_csv(filename):
                     self.status.set("Solution successfully saved")
                 else:
-                    self.status.set("Output file not saved. No solution available")
+                    self.status.set("There was an error when attempting to save output file")
+            else:
+                    self.status.set("Output file not saved. No filename supplied")
         elif self.Sudoku.Initialized:
             self.status.set("Saving current Sudoku grid")
             filename = asksaveasfilename(**self.file_opt)
             if filename != "":
                 if self.Sudoku.write_csv(filename,Solution = False):
-                    self.status.set("Current grid successfully saved")
+                    self.status.set("Current grid is successfully saved")
         else:
             self.status.set("!There is nothing to save!")
 
@@ -129,8 +130,11 @@ class MainForm(Frame):
                 self.status.set("Solution found in %0.3f s", Telapsed)
                 self.setSudokuSolutionGrid()
             else:
-                if (81-self.Sudoku.SudokuList.count(0) ) < 15:
-                    self.status.set("Sudoku does not have minimum number of clues")
+                if not(self.Sudoku.CheckMinClue):
+                    self.status.set("Sudoku does not have the minimum number of clues [%i]" 
+                                    %self.Sudoku.MinClue)
+                elif not(self.Sudoku.ValidateProblem):
+                    self.status.set("Sudoku problem is ill-posed")
                 else:
                     self.status.set("Failed find solution")
         else:
@@ -138,9 +142,10 @@ class MainForm(Frame):
             
     def onClear(self):
         self.UserInput = True
+        self.SudokuList = [0] * 81
         self.clearSudokuGrid()
-        self.btnRead.configure(state = NORMAL)
-        self.status.set("User's input mode. Directly input values in the grid")
+        self.status.set("User input mode. Directly input values in the grid")
+        self.focus()
 
     def setSudokuSolutionGrid(self):
         SudokuList = self.Sudoku.SudokuSolution
@@ -152,11 +157,11 @@ class MainForm(Frame):
         for kk in range(81):
             if SudokuList[kk] != 0:
                 self.canvas.itemconfigure(self.GridText[kk],text = SudokuList[kk])
-                self.canvas.itemconfigure(self.Grid[kk],fill = 'green', outline = 'green')
+                self.canvas.itemconfigure(self.Grid[kk],fill = self.OccColor, outline = self.OccColor)
     
     def clearSudokuGrid(self):
         for kk in range(81):
-            self.canvas.itemconfigure(self.Grid[kk],outline="#fb0", fill="#fb0")
+            self.canvas.itemconfigure(self.Grid[kk],outline=self.UnoccColor, fill=self.UnoccColor)
             self.canvas.itemconfigure(self.GridText[kk],text = " ")
         self.Sudoku.Initialized = False
         self.status.clear()
@@ -173,7 +178,7 @@ class MainForm(Frame):
                                              InitY + ky * (Length + Space), 
                                              InitX + Length + kx * (Length + Space), 
                                              InitY + Length + ky * (Length + Space), 
-                                             outline="#fb0", fill="#fb0"))
+                                             outline=self.UnoccColor, fill=self.UnoccColor))
         for kx in range(4):
             self.canvas.create_line(InitX - 5 + kx * 3 * (Length + Space), InitY - 5, 
                                     InitX - 5 + kx * 3 * (Length + Space), InitY - 5 + Length * 9 + Space * 9, width = 3)
@@ -202,7 +207,6 @@ class MainForm(Frame):
             self.canvas.select_to(CURRENT, END)
 
     def handle_key(self, event):
-        # widget-wide key dispatcher
         item = self.canvas.focus()
         if not item:
             return
@@ -238,25 +242,16 @@ class MainForm(Frame):
             self.canvas.itemconfigure(self.GridText[itemindex], text = ' ')
             
         if self.canvas.itemcget(self.GridText[itemindex],'text') in AllowedChars:
-            self.canvas.itemconfigure(self.Grid[itemindex], fill = 'green', outline = 'green')
+            self.canvas.itemconfigure(self.Grid[itemindex], fill = self.OccColor, outline = self.OccColor)
+            self.SudokuList[itemindex] = int(self.canvas.itemcget(self.GridText[itemindex],'text'))
         elif self.canvas.itemcget(self.GridText[itemindex],'text') == '':
-            self.canvas.itemconfigure(self.Grid[itemindex], fill="#fb0", outline="#fb0")
+            self.canvas.itemconfigure(self.Grid[itemindex], fill=self.UnoccColor, outline=self.UnoccColor)
+            self.SudokuList[itemindex] = 0
         else:
-            self.canvas.itemconfigure(self.Grid[itemindex], fill="#fb0", outline="#fb0")
-
-
-    def ReadGrid(self):
-        SudokuList = []
-        AllowedChars = '123456789'
-        for kk in range(81):
-            iget = self.canvas.itemcget(self.GridText[kk],'text')
-            if iget in AllowedChars:
-                SudokuList.append(int(iget))
-                self.canvas.itemconfigure(self.Grid[kk],fill = 'green', outline = 'green')
-            else:
-                SudokuList.append(0)
-        self.Sudoku.SudokuList = SudokuList
-        self.status.set("Grid read into memory")
+            self.canvas.itemconfigure(self.Grid[itemindex], fill=self.UnoccColor, outline=self.UnoccColor)
+            self.SudokuList[itemindex] = 0
+        
+        self.Sudoku.SudokuList = self.SudokuList
 
 def main():
     root = Tk()

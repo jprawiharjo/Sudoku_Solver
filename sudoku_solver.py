@@ -18,6 +18,7 @@ class Sudoku(object):
     __SudokuList = []
     __ProblemList = []
     __SudokuBoxes = []
+    MinClue = 17
     
     def __init__(self):
         self.__makeList()
@@ -42,6 +43,23 @@ class Sudoku(object):
                 for ch in kx:
                     Boxes.extend([ch+a for a in ky])
                 self.__SudokuBoxes.append(Boxes)
+
+    @property
+    def ValidateProblem(self):
+        if self.Initialized:
+            for kI in self.__SudokuIterables:
+                for kx in kI:
+                    MembersList = []
+                    for ky in kx:
+                        if isinstance(self.__SudokuDict[ky],int):
+                            if self.__SudokuDict[ky] > 0:
+                                MembersList.append(self.__SudokuDict[ky])
+                        MembersSet = set(MembersList)
+                        if len(MembersSet) != len(MembersList):
+                            return False
+            return True
+        else:
+            return False
     
     def __convertToGrid(self,inList):
         outGrid = []
@@ -169,7 +187,7 @@ class Sudoku(object):
                         replaced = True
         return
 
-    def __Hitman(self):
+    def __ReduceProblemSpace(self):
         for kx in self.__SudokuBoxes:
             Nrange = range(1,10)
             Box = []
@@ -208,7 +226,7 @@ class Sudoku(object):
                                         elif len(self.__SudokuDict[ki]) == 0:
                                             self.__SudokuDict[ki] = 0
 
-    def __FindTheRealMcCoy(self):
+    def __FindUniqueValue(self):
         Found = True
         while Found:
             Found = False
@@ -229,9 +247,9 @@ class Sudoku(object):
                                         self.__SudokuDict[ki] = kb
                                         Found = True
             
-            self.__RemoveDoppelGaenger()
+            self.__RemoveDuplicates()
 
-    def __RemoveTheFakes(self):
+    def __EliminateOccupiedValues(self):
         for mm in range(0,2):
             for kx in self.__SudokuBoxes:
                 if mm == 0:
@@ -277,9 +295,9 @@ class Sudoku(object):
                                     self.__SudokuDict[kc] = self.__SudokuDict[kc][0]
                                 elif len(self.__SudokuDict[kc]) == 0:
                                     self.__SudokuDict[kc] = 0
-            self.__RemoveDoppelGaenger()
+            self.__RemoveDuplicates()
 
-    def __RemoveDoppelGaenger(self):
+    def __RemoveDuplicates(self):
         Removed = True
         while Removed:
             for kI in self.__SudokuIterables:
@@ -300,7 +318,7 @@ class Sudoku(object):
                             elif len(self.__SudokuDict[ky]) == 0:
                                 self.__SudokuDict[ky] = 0
                         
-    def __DoubleDragon(self):
+    def __DoubleValueStrategy(self):
         Removed = True
         while Removed:
             for kI in self.__SudokuIterables:
@@ -351,9 +369,9 @@ class Sudoku(object):
     def __LogicSolve(self):
         N0 = 0
         for kk in range(10):
-            self.__FindTheRealMcCoy()
-            self.__DoubleDragon()
-            self.__RemoveTheFakes()
+            self.__FindUniqueValue()
+            self.__DoubleValueStrategy()
+            self.__EliminateOccupiedValues()
             Nempty = self.__CountEmptyCell()
             if Nempty == N0:
                 break
@@ -364,12 +382,12 @@ class Sudoku(object):
         else:
             return False
             
-    def __BruteForce(self):
+    def __BruteForceSearch(self):
         Odict, Qout = self.__Branch()
         
         for Iq in Qout[1]:
             self.__SudokuDict[Qout[0]] = Iq
-            self.__RemoveDoppelGaenger()
+            self.__RemoveDuplicates()
             self.__LogicSolve()
             if self.__CountEmptyCell() == 0:
                 self.__SolutionDictToList()
@@ -378,7 +396,7 @@ class Sudoku(object):
                 else:
                     self.__SudokuDict = Odict.copy()
             else:
-                if not(self.__BruteForce()):
+                if not(self.__BruteForceSearch()):
                     self.__SudokuDict = Odict.copy()
                 else:
                     return True
@@ -398,27 +416,40 @@ class Sudoku(object):
         return Original,kI
     
     def Solve(self, verbose=False):
-        if (81-self.__ProblemList.count(0)) > 15:
-            self.__Singularity()
-            self.__Hitman()
-            if verbose: print 'Attempting to solve by logic...'
-            Nempty = self.__LogicSolve()
-            if not Nempty:
-                if verbose: print 'OK, that didn\'t work. Let\'s use \'The Force\'...'
-                Nempty = self.__BruteForce()
-            self.__SolutionDictToList()
-            
-            if Nempty:        
-                if self.__Metric(self.__SolutionGrid) == 0:
-                    if verbose: print "Solution Found!"
-                    self.Solved = True
-                    return True
+        if self.CheckMinClue:
+            if self.ValidateProblem:
+                self.__Singularity()
+                self.__ReduceProblemSpace()
+                if verbose: print 'Attempting to solve by logic...'
+                Nempty = self.__LogicSolve()
+                if not Nempty:
+                    if verbose: print 'OK, that didn\'t work. Let\'s use Brute Force Search...'
+                    Nempty = self.__BruteForceSearch()
+                self.__SolutionDictToList()
+                
+                if Nempty:        
+                    if self.__Metric(self.__SolutionGrid) == 0:
+                        if verbose: print "Solution Found!"
+                        self.Solved = True
+                        return True
+                else:
+                    if verbose: print "Failed to find solution!"
+                    self.Solved = False
+                    return False
             else:
-                if verbose: print "Failed to find solution!"
-                self.Solved = False
+                if verbose: print "Problem is ill-posed. There are duplicate values."
                 return False
         else:
+            if verbose: print "Problem does not have the minimum number of clue"
             return False
+    
+    @property
+    def CheckMinClue(self):
+        if (81 - self.__ProblemList.count(0)) >= self.MinClue:
+            return True
+        else:
+            return False
+                
 
     def __Metric(self,inGrid):
         SumRow = 0

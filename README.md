@@ -32,17 +32,8 @@ If it's not supplied, it will be in the form of "input-sol.txt"
 
 The program makes use of os, sys, and collections libraries
 
-Examples:
-=========
-sudoku1.txt : problem provided by John Joo
-
-sudoku2.txt : Sudoku problem by Arto Inkala in 2006 [http://usatoday30.usatoday.com/news/offbeat/2006-11-06-sudoku_x.htm]
-
-sudoku3.txt : Another sudoku problem by Arto Inkala. More difficult than sudoku2.txt [http://www.mirror.co.uk/news/weird-news/worlds-hardest-sudoku-can-you-242294]
-
-
 GUI usage:
-
+============
 Open button: Open txt file that contains Sudoku problem in csv
 
 Solve button: Solves the loaded sudoku problem
@@ -51,7 +42,17 @@ Save button: Saves the solution onto csv file.
 
 User Input button: Using user input: User can input numbers directly on the grid
 
-Read button: Press this to read the user input grid into the memory
+
+
+
+Examples:
+=========
+sudoku1.txt : problem provided by John Joo
+
+sudoku2.txt : Sudoku problem by Arto Inkala in 2006 [http://usatoday30.usatoday.com/news/offbeat/2006-11-06-sudoku_x.htm]
+
+sudoku3.txt : Another sudoku problem by Arto Inkala. More difficult than sudoku2.txt [http://www.mirror.co.uk/news/weird-news/worlds-hardest-sudoku-can-you-242294]
+
 
 Note:
 ========
