@@ -60,6 +60,7 @@ class Sudoku(object):
         if os.path.exists(FileName):
             Wf = open(FileName)
             LinesRead = Wf.readlines()
+            Wf.close()
             kcount = 0
             for line in LinesRead:
                 TempArray = map(int,line.rstrip('\n').split(','))
@@ -76,7 +77,6 @@ class Sudoku(object):
                 return False
             self.__assignDict()
             self.__ProblemGrid = self.__convertToGrid(self.__ProblemList)
-            Wf.close()
             self.Initialized = True
             return True
         else:
@@ -85,8 +85,18 @@ class Sudoku(object):
 
     def __getSudokuList(self):
         return self.__ProblemList
+
+    def __setSudokuList(self,inList):
+        if len(inList) == 81:
+            self.__ProblemList = inList
+            self.__assignDict()
+            self.__ProblemGrid = self.__convertToGrid(self.__ProblemList)
+            self.Initialized = True
+            return True
+        else:
+            return False
     
-    SudokuList = property(fget = __getSudokuList,fset = None)
+    SudokuList = property(fget = __getSudokuList,fset = __setSudokuList)
 
     def parse_string_grid(self,inString):
         inString = inString.rstrip('\n')
@@ -119,11 +129,14 @@ class Sudoku(object):
             print FN + "will be created"
         return True
             
-    def write_csv(self,FileName,verbose = False):
-        self.__ProblemList = []
+    def write_csv(self,FileName,verbose = False, Solution = True):
+        if Solution:
+            OutGrid = self.__SolutionGrid
+        else:
+            OutGrid = self.__ProblemGrid
         try:
             Wf = open(FileName,'w')
-            for kx in self.__SolutionGrid:
+            for kx in OutGrid:
                 temp = str(kx)
                 temp = temp[1:-1]
                 Wf.write(temp + '\r\n')
@@ -385,23 +398,26 @@ class Sudoku(object):
         return Original,kI
     
     def Solve(self, verbose=False):
-        self.__Singularity()
-        self.__Hitman()
-        if verbose: print 'Attempting to solve by logic...'
-        Nempty = self.__LogicSolve()
-        if not Nempty:
-            if verbose: print 'OK, that didn\'t work. Let\'s use \'The Force\'...'
-            Nempty = self.__BruteForce()
-        self.__SolutionDictToList()
-        
-        if Nempty:        
-            if self.__Metric(self.__SolutionGrid) == 0:
-                if verbose: print "Solution Found!"
-                self.Solved = True
-                return True
+        if (81-self.__ProblemList.count(0)) > 15:
+            self.__Singularity()
+            self.__Hitman()
+            if verbose: print 'Attempting to solve by logic...'
+            Nempty = self.__LogicSolve()
+            if not Nempty:
+                if verbose: print 'OK, that didn\'t work. Let\'s use \'The Force\'...'
+                Nempty = self.__BruteForce()
+            self.__SolutionDictToList()
+            
+            if Nempty:        
+                if self.__Metric(self.__SolutionGrid) == 0:
+                    if verbose: print "Solution Found!"
+                    self.Solved = True
+                    return True
+            else:
+                if verbose: print "Failed to find solution!"
+                self.Solved = False
+                return False
         else:
-            if verbose: print "Failed to find solution!"
-            self.Solved = False
             return False
 
     def __Metric(self,inGrid):

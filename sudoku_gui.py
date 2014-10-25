@@ -9,6 +9,7 @@ from Tkinter import *
 from tkFileDialog import *
 import sudoku_solver
 import time
+import threading
 
 class StatusBar(Frame):
     def __init__(self, master):
@@ -38,6 +39,7 @@ class MainForm(Frame):
         self.parent.title("Sudoku Solver")
         self.pack(fill=BOTH, expand=1)
         
+        self.UserInput = False
         
         self.file_opt = options = {}
         options['defaultextension'] = '.txt'
@@ -59,6 +61,14 @@ class MainForm(Frame):
         b = Button(toolbar, text="Solve", width=6, command=self.onSolve, font = self.Tfont)
         b.pack(side=LEFT, padx=2, pady=2)
 
+        self.btnClear = Button(toolbar, text="User", width=6,
+                               command=self.onClear, font = self.Tfont)
+        self.btnClear.pack(side=LEFT, padx=2, pady=2)
+
+        self.btnRead = Button(toolbar, text="Read", width=6, command=self.ReadGrid, 
+                              font = self.Tfont, state = DISABLED)
+        self.btnRead.pack(side=LEFT, padx=2, pady=2)
+
         toolbar.pack(side=TOP, fill=X)
         
         self.Cfont = ('Helvetica','24','bold')
@@ -73,6 +83,10 @@ class MainForm(Frame):
         self.CreateGrid()
         self.initFillGrid()
 
+        self.canvas.bind("<Double-Button-1>", self.set_focus)
+        self.canvas.bind("<Button-1>", self.set_focus)
+        self.canvas.bind("<Key>", self.handle_key)
+
         self.status = StatusBar(self.parent)
         self.status.pack(side=BOTTOM, fill=X)
 
@@ -86,17 +100,25 @@ class MainForm(Frame):
             else:
                 self.status.set("Failed to open file")
             self.setSudokuProblemGrid()
+            self.btnRead.configure(state = DISABLED)
+            self.UserInput = False
 
     def onSave(self):
         if self.Sudoku.Solved:
             filename = asksaveasfilename(**self.file_opt)
             if filename != "":
                 if self.Sudoku.write_csv(filename):
-                    self.status.set("Output file successfully saved")
+                    self.status.set("Solution successfully saved")
                 else:
                     self.status.set("Output file not saved. No solution available")
+        elif self.Sudoku.Initialized:
+            self.status.set("Saving current Sudoku grid")
+            filename = asksaveasfilename(**self.file_opt)
+            if filename != "":
+                if self.Sudoku.write_csv(filename,Solution = False):
+                    self.status.set("Current grid successfully saved")
         else:
-            self.status.set("!There is no solution to save!")
+            self.status.set("!There is nothing to save!")
 
     def onSolve(self):
         Tstart = time.clock()
@@ -107,15 +129,23 @@ class MainForm(Frame):
                 self.status.set("Solution found in %0.3f s", Telapsed)
                 self.setSudokuSolutionGrid()
             else:
-                self.status.set("Failed find solution")
+                if (81-self.Sudoku.SudokuList.count(0) ) < 15:
+                    self.status.set("Sudoku does not have minimum number of clues")
+                else:
+                    self.status.set("Failed find solution")
         else:
             self.status.set("No problem found")
+            
+    def onClear(self):
+        self.UserInput = True
+        self.clearSudokuGrid()
+        self.btnRead.configure(state = NORMAL)
+        self.status.set("User's input mode. Directly input values in the grid")
 
     def setSudokuSolutionGrid(self):
         SudokuList = self.Sudoku.SudokuSolution
         for kk in range(81):
             self.canvas.itemconfigure(self.GridText[kk],text = SudokuList[kk])
-            
 
     def setSudokuProblemGrid(self):
         SudokuList = self.Sudoku.SudokuList
@@ -128,6 +158,8 @@ class MainForm(Frame):
         for kk in range(81):
             self.canvas.itemconfigure(self.Grid[kk],outline="#fb0", fill="#fb0")
             self.canvas.itemconfigure(self.GridText[kk],text = " ")
+        self.Sudoku.Initialized = False
+        self.status.clear()
 
     def CreateGrid(self):
         Length = self.Length
@@ -159,6 +191,72 @@ class MainForm(Frame):
                     self.GridText.append(self.canvas.create_text(self.InitX + self.Length/2 + kx * (self.Length + self.Space), 
                                                              self.InitY + self.Length/2 + ky * (self.Length + self.Space),
                                                              text=' ',font=self.Cfont))
+
+    def set_focus(self, event):
+        if self.canvas.type(CURRENT) != "text":
+            return
+        if self.UserInput:
+            self.canvas.focus_set() # move focus to canvas
+            self.canvas.focus(CURRENT) # set focus to text item
+            self.canvas.select_from(CURRENT, 0)
+            self.canvas.select_to(CURRENT, END)
+
+    def handle_key(self, event):
+        # widget-wide key dispatcher
+        item = self.canvas.focus()
+        if not item:
+            return
+
+        itemindex = int(item) - self.GridText[0]        
+        insert = self.canvas.index(item, INSERT)
+        
+        AllowedChars = '123456789'
+
+        if event.char in AllowedChars + ' ':
+            if self.canvas.select_item():
+                self.canvas.dchars(item, SEL_FIRST, SEL_LAST)
+                self.canvas.select_clear()
+            if insert < 1:
+                self.canvas.insert(item, "insert", event.char)
+        elif event.keysym == "BackSpace":
+            if self.canvas.select_item():
+                self.canvas.dchars(item, SEL_FIRST, SEL_LAST)
+                self.canvas.select_clear()
+            else:
+                if insert > 0:
+                    self.canvas.dchars(item, insert-1, insert)
+        elif event.keysym == "Right":
+            self.canvas.icursor(item, insert+1)
+            self.canvas.select_clear()
+        elif event.keysym == "Left":
+            self.canvas.icursor(item, insert-1)
+            self.canvas.select_clear()
+        else:
+            pass
+        
+        if self.canvas.itemcget(self.GridText[itemindex],'text') == '':
+            self.canvas.itemconfigure(self.GridText[itemindex], text = ' ')
+            
+        if self.canvas.itemcget(self.GridText[itemindex],'text') in AllowedChars:
+            self.canvas.itemconfigure(self.Grid[itemindex], fill = 'green', outline = 'green')
+        elif self.canvas.itemcget(self.GridText[itemindex],'text') == '':
+            self.canvas.itemconfigure(self.Grid[itemindex], fill="#fb0", outline="#fb0")
+        else:
+            self.canvas.itemconfigure(self.Grid[itemindex], fill="#fb0", outline="#fb0")
+
+
+    def ReadGrid(self):
+        SudokuList = []
+        AllowedChars = '123456789'
+        for kk in range(81):
+            iget = self.canvas.itemcget(self.GridText[kk],'text')
+            if iget in AllowedChars:
+                SudokuList.append(int(iget))
+                self.canvas.itemconfigure(self.Grid[kk],fill = 'green', outline = 'green')
+            else:
+                SudokuList.append(0)
+        self.Sudoku.SudokuList = SudokuList
+        self.status.set("Grid read into memory")
 
 def main():
     root = Tk()
