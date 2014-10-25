@@ -20,3 +20,8 @@ output.txt: Optional. Output file. If the filename already exists, it will be ov
 If it's not supplied, it will be in the form of "input-sol.txt"
 
 The program makes use of os, sys, and collections libraries
+
+examples:
+sudoku1.txt : problem provided by Insight
+sudoku2.txt : Sudoku problem by Arto Inkala in 2006 [http://usatoday30.usatoday.com/news/offbeat/2006-11-06-sudoku_x.htm]
+sudoku3.txt : Another sudoku problem by Arto Inkala. More difficult than sudoku2.txt [http://www.mirror.co.uk/news/weird-news/worlds-hardest-sudoku-can-you-242294]
