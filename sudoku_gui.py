@@ -7,6 +7,7 @@ Created on Fri Oct 24 20:53:19 2014
 
 from Tkinter import *
 from tkFileDialog import *
+from tkMessageBox import *
 import sudoku_solver
 import time
 
@@ -66,6 +67,9 @@ class MainForm(Frame):
                                command=self.onUser, font = self.Tfont)
         self.btnClear.pack(side=LEFT, padx=2, pady=2)
 
+        b = Button(toolbar, text="About", width=6, command=self.onAbout, font = self.Tfont)
+        b.pack(side=LEFT, padx=2, pady=2)
+
         toolbar.pack(side=TOP, fill=X)
         
         self.Cfont = ('Helvetica','24','bold')
@@ -96,8 +100,9 @@ class MainForm(Frame):
                 self.status.set("Input file successfully parsed")
             else:
                 self.status.set("Failed to open file")
-            self.setSudokuProblemGrid()
-            self.UserInput = False
+            if self.Sudoku.Initialized:
+                self.setSudokuProblemGrid()
+                self.UserInput = False
 
     def onSave(self):
         if self.Sudoku.Solved:
@@ -120,8 +125,10 @@ class MainForm(Frame):
             self.status.set("!There is nothing to save!")
 
     def onSolve(self):
-        Tstart = time.clock()
+        if self.UserInput: self.Sudoku.SudokuList = self.SudokuList
+            
         if self.Sudoku.Initialized:
+            Tstart = time.clock()
             success = self.Sudoku.Solve()
             Telapsed = time.clock() - Tstart
             if success:
@@ -144,7 +151,6 @@ class MainForm(Frame):
         self.clearSudokuGrid()
         self.status.set("User input mode. Directly input values in the grid")
         self.focus()
-        self.Sudoku.SudokuList = self.SudokuList
 
     def setSudokuSolutionGrid(self):
         SudokuList = self.Sudoku.SudokuSolution
@@ -215,11 +221,13 @@ class MainForm(Frame):
         
         AllowedChars = '123456789'
 
-        if event.char in AllowedChars + ' ':
+        if event.char in AllowedChars:
             if self.canvas.select_item():
                 self.canvas.dchars(item, SEL_FIRST, SEL_LAST)
                 self.canvas.select_clear()
-            if insert < 1:
+            if insert == 1:
+                self.canvas.dchars(item, insert-1, insert)
+            if insert <= 1:
                 self.canvas.insert(item, "insert", event.char)
         elif event.keysym == "BackSpace":
             if self.canvas.select_item():
@@ -237,6 +245,10 @@ class MainForm(Frame):
         else:
             pass
         
+        CurrentText = self.canvas.itemcget(self.GridText[itemindex],'text')
+        if len(CurrentText) > 1:
+            self.canvas.itemconfigure(self.GridText[itemindex], text = CurrentText[0])
+        
         if self.canvas.itemcget(self.GridText[itemindex],'text') == '':
             self.canvas.itemconfigure(self.GridText[itemindex], text = ' ')
             
@@ -249,6 +261,9 @@ class MainForm(Frame):
         else:
             self.canvas.itemconfigure(self.Grid[itemindex], fill=self.UnoccColor, outline=self.UnoccColor)
             self.SudokuList[itemindex] = 0
+
+    def onAbout(self):
+        showinfo("About","""Sudoku Solver in Python by Jerry Prawiharjo""")
 
 def main():
     root = Tk()

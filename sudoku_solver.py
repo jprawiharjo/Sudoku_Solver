@@ -106,7 +106,7 @@ class Sudoku(object):
 
     def __setSudokuList(self,inList):
         if len(inList) == 81:
-            self.__ProblemList = inList
+            self.__ProblemList = inList[:]
             self.__assignDict()
             self.__ProblemGrid = self.__convertToGrid(self.__ProblemList)
             self.Initialized = True
@@ -467,22 +467,6 @@ class Sudoku(object):
                         a += inGrid[m+(l*3)][n+(k*3)]
                 SumBox += abs(a-45)
         return SumRow + SumCol + SumBox
-
-def LoadNorvigCollection(FN):
-    wf = open(FN)
-    Fl = wf.readlines()
-    k = 1
-    Failed = []
-    for line in Fl:
-        A.parse_string_grid(line)
-        if A.Solve():
-            print k, "Solved"
-        else:
-            print k, "Fail"
-            Failed.append(k)
-        k+=1
-    print Failed
-    wf.close()
 
 if __name__ == "__main__":
     A = Sudoku()
