@@ -9,8 +9,8 @@ import os
 import sys
 from collections import *
 
-inFN = "sudoku3.txt"
-outFN = "sudoku3-sol.txt"
+inFN = "sudoku1.txt"
+outFN = "sudoku1-sol.txt"
 
 class Sudoku(object):
     __X = 'ABCDEFGHI'
@@ -483,7 +483,7 @@ if __name__ == "__main__":
         print "No command line arguments. Using example files %s" %inFN
 
     if A.CheckOutputFileExists(outFN):
-        if A.read_csv(inFN):
+        if A.read_csv(inFN,verbose = True):
             A.Solve(verbose = True)
-            A.write_csv(outFN)
+            A.write_csv(outFN,verbose = True)
             

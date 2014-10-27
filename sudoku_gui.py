@@ -39,6 +39,7 @@ class MainForm(Frame):
         self.pack(fill=BOTH, expand=1)
         
         self.UserInput = False
+        self.Editable = False
         
         self.UnoccColor = "#fb0"
         self.OccColor = 'green'
@@ -93,16 +94,26 @@ class MainForm(Frame):
 
     def onOpen(self):
         self.clearSudokuGrid()
-        filename = askopenfilename(**self.file_opt)
-        if filename != "" :
-            success = self.Sudoku.read_csv(filename)
-            if success:
-                self.status.set("Input file successfully parsed")
-            else:
-                self.status.set("Failed to open file")
-            if self.Sudoku.Initialized:
-                self.setSudokuProblemGrid()
-                self.UserInput = False
+        filename = askopenfile(**self.file_opt)
+        Lines = filename.readlines()
+        filename.close()
+        self.SudokuList = []
+        if len(Lines) < 9:
+            self.status.set("Error! File contains less than 9 columns")
+            return False
+        else:
+            for ll in Lines[0:9]:
+                ll = map(int,ll.rstrip('\n').split(','))
+                if len(ll) < 9:
+                    self.status.set("Line %i ontains less than 9 values",(ll+1))
+                    return False
+                else:
+                    self.SudokuList.extend(ll)
+            self.status.set("Input file successfully parsed")
+            self.Sudoku.SudokuList = self.SudokuList
+            self.setSudokuProblemGrid()
+            self.UserInput = False
+            self.Editable = True
 
     def onSave(self):
         if self.Sudoku.Solved:
@@ -125,8 +136,9 @@ class MainForm(Frame):
             self.status.set("!There is nothing to save!")
 
     def onSolve(self):
-        if self.UserInput: self.Sudoku.SudokuList = self.SudokuList
-            
+        if self.UserInput or self.Editable: 
+            self.Sudoku.SudokuList = self.SudokuList
+             
         if self.Sudoku.Initialized:
             Tstart = time.clock()
             success = self.Sudoku.Solve()
@@ -134,6 +146,7 @@ class MainForm(Frame):
             if success:
                 self.status.set("Solution found in %0.3f s", Telapsed)
                 self.setSudokuSolutionGrid()
+                self.Editable = False
             else:
                 if not(self.Sudoku.CheckMinClue):
                     self.status.set("Sudoku does not have the minimum number of clues [%i]" 
@@ -205,7 +218,7 @@ class MainForm(Frame):
     def set_focus(self, event):
         if self.canvas.type(CURRENT) != "text":
             return
-        if self.UserInput:
+        if self.UserInput or self.Editable:
             self.canvas.focus_set() # move focus to canvas
             self.canvas.focus(CURRENT) # set focus to text item
             self.canvas.select_from(CURRENT, 0)
