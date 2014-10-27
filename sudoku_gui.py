@@ -285,7 +285,15 @@ class MainForm(Frame):
             self.SudokuList[itemindex] = 0
 
     def onAbout(self):
-        showinfo("About","""Sudoku Solver in Python by Jerry Prawiharjo""")
+        showinfo("About",
+        """Sudoku Solver in Python by Jerry Prawiharjo
+        Open: Opens txt file containing Sudoku grid in csv format
+               User can edit the loaded grid.
+        Save: Saves either sudoku solution grid or current grid 
+                  to a txt file in csv format
+        Solve: Attempts to solve loaded Sudoku grid.
+                User cannot edit the solved grid
+        User Input: Clears grid and let user to input own grid""")
 
 def main():
     root = Tk()
