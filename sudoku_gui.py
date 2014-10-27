@@ -154,6 +154,7 @@ class MainForm(Frame):
                 self.status.set("Solution found in %0.3f s", Telapsed)
                 self.setSudokuSolutionGrid()
                 self.Editable = False
+                self.UserInput = False
             else:
                 if not(self.Sudoku.CheckMinClue):
                     self.status.set("Sudoku does not have the minimum number of clues [%i]" 
@@ -167,6 +168,7 @@ class MainForm(Frame):
             
     def onUser(self):
         self.UserInput = True
+        self.Sudoku.Clear()
         self.SudokuList = [0] * 81
         self.clearSudokuGrid()
         self.status.set("User input mode. Directly input values in the grid")

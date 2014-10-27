@@ -116,6 +116,10 @@ class Sudoku(object):
     
     SudokuList = property(fget = __getSudokuList,fset = __setSudokuList)
 
+    def Clear(self):
+        self.Solved = False
+        self.Initialized = False
+        
     def parse_string_grid(self,inString):
         inString = inString.rstrip('\n')
         self.__ProblemList = []
