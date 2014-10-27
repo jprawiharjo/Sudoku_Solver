@@ -25,6 +25,8 @@ The python code calls for **os**, **sys**, and **collections** libraries
 
 ## GUI: ##
 
+***usage***: `python sudoku_gui.py`
+
 <a href="http://tinypic.com?ref=29wsjd2" target="_blank"><img src="http://i62.tinypic.com/29wsjd2.png" border="0" alt="Image and video hosting by TinyPic"></a>
 
 **Open button**: Open txt file that contains Sudoku problem in csv format
@@ -39,24 +41,32 @@ The python code calls for **os**, **sys**, and **collections** libraries
 
 *Notes*: Before pressing solve, user can still edit the loaded grid
 
+This code calls for sudoku_solver.py, and use Tkinter [tkFileDialog, tkMessageBox] for GUI
+
+## Stand-alone: ##
+
+***usage***: `python setupGui.py build`
+
+This will create executable under `.\build\` using cx_Freeze
+
 
 ## Example Files: ##
 
 **sudoku1.txt**: problem provided by John Joo
 
 **sudoku2.txt**: Sudoku problem by Arto Inkala, c.2006 
-[http://usatoday30.usatoday.com/news/offbeat/2006-11-06-sudoku_x.htm](http://usatoday30.usatoday.com/news/offbeat/2006-11-06-sudoku_x.htm)
+[[http://usatoday30.usatoday.com/news/offbeat/2006-11-06-sudoku_x.htm]](http://usatoday30.usatoday.com/news/offbeat/2006-11-06-sudoku_x.htm "Created by Arto Inkala c.2006")
 
-**sudoku3.txt**: Dubbed the world's most difficult sudoku problem, by Arto Inkala, c.2010. More difficult than sudoku2.txt [http://www.mirror.co.uk/news/weird-news/worlds-hardest-sudoku-can-you-242294](http://www.mirror.co.uk/news/weird-news/worlds-hardest-sudoku-can-you-242294 "Dubbed the world's most difficult Sudoku, by Arto Inkala, c. 2010")
+**sudoku3.txt**: Dubbed the world's most difficult sudoku problem, by Arto Inkala, c.2010. More difficult than sudoku2.txt [[http://www.mirror.co.uk/news/weird-news/worlds-hardest-sudoku-can-you-242294]](http://www.mirror.co.uk/news/weird-news/worlds-hardest-sudoku-can-you-242294 "Dubbed the world's most difficult Sudoku, by Arto Inkala, c. 2010")
 
 **sudoku4.txt**: Yet another hard sudoku problem
 
 
-## Note: ##
+## Notes: ##
 
-There is a sudoku solver in Python by Peter Norvig [http://norvig.com/sudoku.html](http://norvig.com/sudoku.html)
+There is a sudoku solver in Python by Peter Norvig [[http://norvig.com/sudoku.html]](http://norvig.com/sudoku.html)
 
 This solver has been checked against Norvig's problem collection 'hard.txt' and 'hardest.txt'
 
-**Disclaimer**: This code does not copy Norvig's algorithm in any way.
+**Disclaimer**: This code does not copy nor use Norvig's code in any way.
 
