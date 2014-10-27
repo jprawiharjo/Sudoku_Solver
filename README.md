@@ -42,9 +42,9 @@ The python code calls for **os**, **sys**, and **collections** libraries
 
 ## Example Files: ##
 
-`sudoku1.txt`: problem provided by John Joo
+**sudoku1.txt**: problem provided by John Joo
 
-`sudoku2.txt`: Sudoku problem by Arto Inkala, c.2006 
+**sudoku2.txt**: Sudoku problem by Arto Inkala, c.2006 
 [http://usatoday30.usatoday.com/news/offbeat/2006-11-06-sudoku_x.htm](http://usatoday30.usatoday.com/news/offbeat/2006-11-06-sudoku_x.htm)
 
 **sudoku3.txt**: Dubbed the world's most difficult sudoku problem, by Arto Inkala, c.2010. More difficult than sudoku2.txt [http://www.mirror.co.uk/news/weird-news/worlds-hardest-sudoku-can-you-242294](http://www.mirror.co.uk/news/weird-news/worlds-hardest-sudoku-can-you-242294 "Dubbed the world's most difficult Sudoku, by Arto Inkala, c. 2010")
