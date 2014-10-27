@@ -132,6 +132,13 @@ class MainForm(Frame):
             if filename != "":
                 if self.Sudoku.write_csv(filename,Solution = False):
                     self.status.set("Current grid is successfully saved")
+        elif self.UserInput:
+            self.status.set("Saving current Sudoku grid")
+            self.Sudoku.SudokuList = self.SudokuList
+            filename = asksaveasfilename(title = 'Saving Current Grid',**self.file_opt)
+            if filename != "":
+                if self.Sudoku.write_csv(filename,Solution = False):
+                    self.status.set("Current grid is successfully saved")
         else:
             self.status.set("!There is nothing to save!")
 
