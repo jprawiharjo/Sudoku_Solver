@@ -162,7 +162,7 @@ class Sudoku(object):
             for kx in OutGrid:
                 temp = str(kx)
                 temp = temp[1:-1]
-                Wf.write(temp + '\r\n')
+                Wf.write(temp.replace(' ','') + '\n')
             Wf.close()
             if verbose: print "Successfully saved output file"
             return True
