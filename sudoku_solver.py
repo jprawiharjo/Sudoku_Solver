@@ -9,8 +9,8 @@ import os
 import sys
 from collections import *
 
-inFN = "sudoku1.txt"
-outFN = "sudoku1-sol.txt"
+inFN = "sudoku2.txt"
+outFN = "sudoku2-sol.txt"
 
 class Sudoku(object):
     __X = 'ABCDEFGHI'
@@ -192,24 +192,24 @@ class Sudoku(object):
 
     def __ReduceProblemSpace(self):
         for kx in self.__SudokuBoxes:
-            Nrange = range(1,10)
+            Nrange = set(range(1,10))
             Box = []
             for ki in kx:
                 Box.append(self.__SudokuDict[ki])
             if Box.count(0) > 0:
-                Nrange = list(set(Nrange) - set(Box))
+                Nrange = Nrange - set(Box)
             while Box.count(0) > 0:
-                self.__SudokuDict[kx[Box.index(0)]] = Nrange[:]
-                Box[Box.index(0)] = Nrange[:]
+                self.__SudokuDict[kx[Box.index(0)]] = Nrange.copy()
+                Box[Box.index(0)] = list(Nrange.copy())
 
         Removed = True
         while Removed:
             for kx in self.__SudokuBoxes:
                 Removed = False
                 for ki in kx:
-                    if isinstance(self.__SudokuDict[ki],list):
+                    if isinstance(self.__SudokuDict[ki],set):
                         if len(self.__SudokuDict[ki]) == 1:
-                            self.__SudokuDict[ki] = self.__SudokuDict[ki][0]
+                            self.__SudokuDict[ki] = self.__SudokuDict[ki].pop()
                         else:
                             for mm in range(2):
                                 if mm == 0:
@@ -218,14 +218,14 @@ class Sudoku(object):
                                     Indexer = [x+ki[1] for x in self.__X]
                                 Indexer.remove(ki)
                                 for kR in Indexer:
-                                    if not isinstance(self.__SudokuDict[kR],list) and isinstance(self.__SudokuDict[ki],list):
+                                    if not isinstance(self.__SudokuDict[kR],set) and isinstance(self.__SudokuDict[ki],set):
                                         if len(self.__SudokuDict[ki]) > 1:
                                             orig = self.__SudokuDict[ki]
-                                            self.__SudokuDict[ki] = sorted(set(self.__SudokuDict[ki]) - set([self.__SudokuDict[kR]]))
+                                            self.__SudokuDict[ki] = self.__SudokuDict[ki] - set([self.__SudokuDict[kR]])
                                             if orig != self.__SudokuDict[ki]:                                            
                                                 Removed = True
                                         if len(self.__SudokuDict[ki]) == 1:
-                                            self.__SudokuDict[ki] = self.__SudokuDict[ki][0]
+                                            self.__SudokuDict[ki] = self.__SudokuDict[ki].pop()
                                         elif len(self.__SudokuDict[ki]) == 0:
                                             self.__SudokuDict[ki] = 0
 
@@ -237,15 +237,15 @@ class Sudoku(object):
                 for kx in kI:
                     NonUniqueList = []
                     for ki in kx:
-                        if isinstance(self.__SudokuDict[ki],list):
-                            NonUniqueList.extend(self.__SudokuDict[ki])
+                        if isinstance(self.__SudokuDict[ki],set):
+                            NonUniqueList.extend(list(self.__SudokuDict[ki]))
                         else:
                             NonUniqueList.append(self.__SudokuDict[ki])
-                    UniqueList = sorted(set(NonUniqueList))
+                    UniqueList = set(NonUniqueList)
                     for kb in UniqueList:
                         if NonUniqueList.count(kb) == 1:
                             for ki in kx:
-                                if isinstance(self.__SudokuDict[ki],list):
+                                if isinstance(self.__SudokuDict[ki],set):
                                     if kb in self.__SudokuDict[ki]:
                                         self.__SudokuDict[ki] = kb
                                         Found = True
@@ -255,46 +255,43 @@ class Sudoku(object):
         for mm in range(0,2):
             for kx in self.__SudokuBoxes:
                 if mm == 0:
-                    R1 = kx[0:3]
-                    R2 = kx[3:6]
-                    R3 = kx[6:]
+                    R1 = set(kx[0:3])
+                    R2 = set(kx[3:6])
+                    R3 = set(kx[6:])
                 else:
-                    R1 = kx[0::3]
-                    R2 = kx[1::3]
-                    R3 = kx[2::3]
-                x1 = []
-                x2 = []
-                x3 = []
+                    R1 = set(kx[0::3])
+                    R2 = set(kx[1::3])
+                    R3 = set(kx[2::3])
+                x1 = set([])
+                x2 = set([])
+                x3 = set([])
                 for x in R1:
-                    if isinstance(self.__SudokuDict[x],list):
-                        x1.extend(self.__SudokuDict[x])
+                    if isinstance(self.__SudokuDict[x],set):
+                        x1.union(self.__SudokuDict[x])
                 for x in R2:
-                    if isinstance(self.__SudokuDict[x],list):
-                        x2.extend(self.__SudokuDict[x])
+                    if isinstance(self.__SudokuDict[x],set):
+                        x2.union(self.__SudokuDict[x])
                 for x in R3:
-                    if isinstance(self.__SudokuDict[x],list):
-                        x3.extend(self.__SudokuDict[x])
-                x1 = set(x1)
-                x2 = set(x2)
-                x3 = set(x3)
+                    if isinstance(self.__SudokuDict[x],set):
+                        x3.union(self.__SudokuDict[x])
                 if len(x1.intersection(x2)) == 0 and len(x2.intersection(x3)) ==0 and len(x1.intersection(x3)) == 0:
                     if mm == 0:
-                        CC1= list(set([R1[0][0] + x for x in self.__Y]) - set(R1))
-                        CC2= list(set([R2[0][0] + x for x in self.__Y]) - set(R2))
-                        CC3= list(set([R3[0][0] + x for x in self.__Y]) - set(R3))
+                        CC1= set([sorted(R1)[0][0] + x for x in self.__Y]) - R1
+                        CC2= set([sorted(R2)[0][0] + x for x in self.__Y]) - R2
+                        CC3= set([sorted(R3)[0][0] + x for x in self.__Y]) - R3
                     else:
-                        CC1= list(set([x + R1[0][1] for x in self.__X]) - set(R1))
-                        CC2= list(set([x + R2[0][1] for x in self.__X]) - set(R2))
-                        CC3= list(set([x + R3[0][1] for x in self.__X]) - set(R3))
+                        CC1= set([x + sorted(R1)[0][1] for x in self.__X]) - R1
+                        CC2= set([x + sorted(R2)[0][1] for x in self.__X]) - R2
+                        CC3= set([x + sorted(R3)[0][1] for x in self.__X]) - R3
                     
                     Z = [[CC1,x1],[CC2,x2],[CC3,x3]]
                     for kz in Z:
                         for kc in kz[0]:
-                            if isinstance(self.__SudokuDict[kc],list):
+                            if isinstance(self.__SudokuDict[kc],set):
                                 if len(self.__SudokuDict[kc]) > 1:
-                                    self.__SudokuDict[kc] = sorted(set(self.__SudokuDict[kc]) - kz[1])
+                                    self.__SudokuDict[kc] = self.__SudokuDict[kc] - kz[1]
                                 if len(self.__SudokuDict[kc]) == 1:
-                                    self.__SudokuDict[kc] = self.__SudokuDict[kc][0]
+                                    self.__SudokuDict[kc] = self.__SudokuDict[kc].pop()
                                 elif len(self.__SudokuDict[kc]) == 0:
                                     self.__SudokuDict[kc] = 0
             self.__RemoveDuplicates()
@@ -305,18 +302,18 @@ class Sudoku(object):
             for kI in self.__SudokuIterables:
                 Removed = False
                 for kx in kI:
-                    Members = []
+                    Members = set([])
                     for ky in kx:
-                        if not isinstance(self.__SudokuDict[ky],list):
-                            Members.append(self.__SudokuDict[ky])
+                        if not isinstance(self.__SudokuDict[ky],set):
+                            Members.add(self.__SudokuDict[ky])
                     for ky in kx:
-                        if isinstance(self.__SudokuDict[ky],list):
-                            orig = self.__SudokuDict[ky][:]
-                            self.__SudokuDict[ky] = sorted(set(self.__SudokuDict[ky]) - set(Members))
+                        if isinstance(self.__SudokuDict[ky],set):
+                            orig = self.__SudokuDict[ky].copy()
+                            self.__SudokuDict[ky] = self.__SudokuDict[ky] - Members
                             if orig != self.__SudokuDict[ky]:
                                 Removed = True
                             if len(self.__SudokuDict[ky]) == 1:
-                                self.__SudokuDict[ky] = self.__SudokuDict[ky][0]
+                                self.__SudokuDict[ky] = self.__SudokuDict[ky].pop()
                             elif len(self.__SudokuDict[ky]) == 0:
                                 self.__SudokuDict[ky] = 0
                         
@@ -329,17 +326,16 @@ class Sudoku(object):
                     Index = []
                     Members = []
                     for ky in kx:
-                        if isinstance(self.__SudokuDict[ky],list):
+                        if isinstance(self.__SudokuDict[ky],set):
                             if len(self.__SudokuDict[ky]) == 2:
                                 Index.append(ky)
                                 Members.append(self.__SudokuDict[ky])
                     if len(Index) == 2 and Members[0] == Members[1]:
-                        kxx = list(kx[:])
-                        kxx = sorted(set(kxx) - set(Index))
+                        kxx = set(kx) - set(Index)
                         for ky in kxx:
-                            if isinstance(self.__SudokuDict[ky],list):
-                                orig = self.__SudokuDict[ky][:]
-                                self.__SudokuDict[ky] = sorted(set(self.__SudokuDict[ky]) - set(Members[0]))
+                            if isinstance(self.__SudokuDict[ky],set):
+                                orig = self.__SudokuDict[ky].copy()
+                                self.__SudokuDict[ky] = self.__SudokuDict[ky] - set(Members[0])
                                 if orig != self.__SudokuDict[ky]:
                                     Removed = True
                                 if len(self.__SudokuDict[ky]) ==0:
@@ -349,7 +345,7 @@ class Sudoku(object):
         k = 0
         for kx in self.__SudokuBoxes:
             for ki in kx:
-                if isinstance(self.__SudokuDict[ki],list):
+                if isinstance(self.__SudokuDict[ki],set):
                     k += 1
         return k
 
@@ -387,7 +383,8 @@ class Sudoku(object):
     def __BruteForceSearch(self):
         Odict, Qout = self.__Branch()
         
-        for Iq in Qout[1]:
+        for kq in range(len(Qout[1])):
+            Iq = Qout[1].pop()
             self.__SudokuDict[Qout[0]] = Iq
             self.__RemoveDuplicates()
             self.__LogicSolve()
@@ -412,9 +409,8 @@ class Sudoku(object):
                 kI = next(Q)
             except StopIteration:
                 break
-            if isinstance(kI[1],list):
+            if isinstance(kI[1],set):
                 break
-        
         return Original,kI
     
     def Solve(self, verbose=False):
@@ -434,10 +430,14 @@ class Sudoku(object):
                         if verbose: print "Solution Found!"
                         self.Solved = True
                         return True
+                    else:
+                        if verbose: print "Failed to find solution!"
+                        self.Solved = False
+                        return False
                 else:
-                    if verbose: print "Failed to find solution!"
-                    self.Solved = False
-                    return False
+                        if verbose: print "Failed to find solution!"
+                        self.Solved = False
+                        return False
             else:
                 if verbose: print "Problem is ill-posed. There are duplicate values."
                 return False

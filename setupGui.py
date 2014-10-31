@@ -5,7 +5,6 @@ Created on Sun Oct 26 16:28:07 2014
 @author: jerry.prawiharjo
 """
 
-import sys
 from cx_Freeze import setup, Executable
 
 # Dependencies are automatically detected, but it might need fine tuning.
