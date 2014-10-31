@@ -95,25 +95,26 @@ class MainForm(Frame):
     def onOpen(self):
         self.clearSudokuGrid()
         filename = askopenfile(**self.file_opt)
-        Lines = filename.readlines()
-        filename.close()
-        self.SudokuList = []
-        if len(Lines) < 9:
-            self.status.set("Error! File contains less than 9 columns")
-            return False
-        else:
-            for ll in Lines[0:9]:
-                ll = map(int,ll.rstrip('\n').split(','))
-                if len(ll) < 9:
-                    self.status.set("Line %i ontains less than 9 values",(ll+1))
-                    return False
-                else:
-                    self.SudokuList.extend(ll)
-            self.status.set("Input file successfully parsed")
-            self.Sudoku.SudokuList = self.SudokuList
-            self.setSudokuProblemGrid()
-            self.UserInput = False
-            self.Editable = True
+        if filename:
+            Lines = filename.readlines()
+            filename.close()
+            self.SudokuList = []
+            if len(Lines) < 9:
+                self.status.set("Error! File contains less than 9 columns")
+                return False
+            else:
+                for ll in Lines[0:9]:
+                    ll = map(int,ll.rstrip('\n').split(','))
+                    if len(ll) < 9:
+                        self.status.set("Line %i ontains less than 9 values",(ll+1))
+                        return False
+                    else:
+                        self.SudokuList.extend(ll)
+                self.status.set("Input file successfully parsed")
+                self.Sudoku.SudokuList = self.SudokuList
+                self.setSudokuProblemGrid()
+                self.UserInput = False
+                self.Editable = True
 
     def onSave(self):
         if self.Sudoku.Solved:
