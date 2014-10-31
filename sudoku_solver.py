@@ -8,9 +8,10 @@ Created on Tue Oct 21 11:50:18 2014
 import os
 import sys
 from collections import *
+import time
 
-inFN = "sudoku2.txt"
-outFN = "sudoku2-sol.txt"
+inFN = "sudoku3.txt"
+outFN = "sudoku3-sol.txt"
 
 class Sudoku(object):
     __X = 'ABCDEFGHI'
@@ -387,7 +388,8 @@ class Sudoku(object):
             Iq = Qout[1].pop()
             self.__SudokuDict[Qout[0]] = Iq
             self.__RemoveDuplicates()
-            self.__LogicSolve()
+            self.__FindUniqueValue()
+            self.__DoubleValueStrategy()
             if self.__CountEmptyCell() == 0:
                 self.__SolutionDictToList()
                 if self.__Metric(self.__SolutionGrid) == 0:
@@ -488,6 +490,9 @@ if __name__ == "__main__":
 
     if A.CheckOutputFileExists(outFN):
         if A.read_csv(inFN,verbose = True):
+            tstart = time.clock()
             A.Solve(verbose = True)
+            telapsed = time.clock() - tstart
+            print telapsed
             A.write_csv(outFN,verbose = True)
             
