@@ -437,9 +437,9 @@ class Sudoku(object):
                         self.Solved = False
                         return False
                 else:
-                        if verbose: print "Failed to find solution!"
-                        self.Solved = False
-                        return False
+                    if verbose: print "Failed to find solution!"
+                    self.Solved = False
+                    return False
             else:
                 if verbose: print "Problem is ill-posed. There are duplicate values."
                 return False
