@@ -396,13 +396,12 @@ class Sudoku(object):
                     return True
                 else:
                     self.__SudokuDict = Odict.copy()
-                    return False
             else:
                 if not(self.__BruteForceSearch()):
                     self.__SudokuDict = Odict.copy()
-                    return False
                 else:
                     return True
+        return False
 
     def __Branch(self):
         Original = self.__SudokuDict.copy()
