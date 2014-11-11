@@ -20,7 +20,7 @@ class Sudoku(object):
     __ProblemList = []
     __SudokuBoxes = []
     MinClue = 17
-    
+
     def __init__(self):
         self.__makeList()
         self.__SudokuGrid = self.__convertToGrid(self.__SudokuKeyList)
@@ -28,7 +28,7 @@ class Sudoku(object):
         self.__SudokuIterables = [self.__SudokuGrid, zip(*self.__SudokuGrid), self.__SudokuBoxes]
         self.Initialized = False
         self.Solved = False
-    
+
     def __makeList(self):
         self.__SudokuKeyList = []
         for ch in self.__X:
@@ -61,14 +61,14 @@ class Sudoku(object):
             return True
         else:
             return False
-    
+
     def __convertToGrid(self,inList):
         outGrid = []
         if len(inList) == 81:
             for kk in range(0,9):
                 outGrid.append(inList[kk*9:(kk+1)*9])
         return outGrid
-        
+
     def PrintGrid(self,inGrid):
         for kk in range(0,9):
             print str(inGrid[kk][:]),
@@ -89,7 +89,7 @@ class Sudoku(object):
                 else:
                     if verbose: print "Error parsing input file: Line %i in the input file has incorrect array length, or does not come in csv format" %kcount
                     return False
-            if len(self.__ProblemList) == 81: 
+            if len(self.__ProblemList) == 81:
                 if verbose: print "Input file successfully parsed"
             else:
                 if verbose: print "Error parsing input file: Input file has incorrect Sudoku row size"
@@ -114,13 +114,13 @@ class Sudoku(object):
             return True
         else:
             return False
-    
+
     SudokuList = property(fget = __getSudokuList,fset = __setSudokuList)
 
     def Clear(self):
         self.Solved = False
         self.Initialized = False
-        
+
     def parse_string_grid(self,inString):
         inString = inString.rstrip('\n')
         self.__ProblemList = []
@@ -151,7 +151,7 @@ class Sudoku(object):
         else:
             print FN + " will be created"
         return True
-            
+
     def write_csv(self,FileName,verbose = False, Solution = True):
         if Solution:
             OutGrid = self.__SolutionGrid
@@ -223,7 +223,7 @@ class Sudoku(object):
                                         if len(self.__SudokuDict[ki]) > 1:
                                             orig = self.__SudokuDict[ki]
                                             self.__SudokuDict[ki] = self.__SudokuDict[ki] - set([self.__SudokuDict[kR]])
-                                            if orig != self.__SudokuDict[ki]:                                            
+                                            if orig != self.__SudokuDict[ki]:
                                                 Removed = True
                                         if len(self.__SudokuDict[ki]) == 1:
                                             self.__SudokuDict[ki] = self.__SudokuDict[ki].pop()
@@ -284,7 +284,7 @@ class Sudoku(object):
                         CC1= set([x + sorted(R1)[0][1] for x in self.__X]) - R1
                         CC2= set([x + sorted(R2)[0][1] for x in self.__X]) - R2
                         CC3= set([x + sorted(R3)[0][1] for x in self.__X]) - R3
-                    
+
                     Z = [[CC1,x1],[CC2,x2],[CC3,x3]]
                     for kz in Z:
                         for kc in kz[0]:
@@ -317,7 +317,7 @@ class Sudoku(object):
                                 self.__SudokuDict[ky] = self.__SudokuDict[ky].pop()
                             elif len(self.__SudokuDict[ky]) == 0:
                                 self.__SudokuDict[ky] = 0
-                        
+
     def __DoubleValueStrategy(self):
         Removed = True
         while Removed:
@@ -341,7 +341,7 @@ class Sudoku(object):
                                     Removed = True
                                 if len(self.__SudokuDict[ky]) ==0:
                                     self.__SudokuDict[ky] = 0
-    
+
     def __CountEmptyCell(self):
         k = 0
         for kx in self.__SudokuBoxes:
@@ -356,15 +356,15 @@ class Sudoku(object):
             for ky in kx:
                 self.__SolutionList.append(self.__SudokuDict[ky])
         self.__SolutionGrid = self.__convertToGrid(self.__SolutionList)
-    
+
     def __getSudokuSolution(self):
         if self.__SolutionList is not None:
             return self.__SolutionList
         else:
             return
-        
+
     SudokuSolution = property(fget = __getSudokuSolution)
-    
+
     def __LogicSolve(self):
         N0 = 0
         for kk in range(10):
@@ -380,10 +380,10 @@ class Sudoku(object):
             return True
         else:
             return False
-            
+
     def __BruteForceSearch(self):
         Odict, Qout = self.__Branch()
-        
+
         for kq in range(len(Qout[1])):
             Iq = Qout[1].pop()
             self.__SudokuDict[Qout[0]] = Iq
@@ -396,13 +396,14 @@ class Sudoku(object):
                     return True
                 else:
                     self.__SudokuDict = Odict.copy()
+                    return False
             else:
                 if not(self.__BruteForceSearch()):
                     self.__SudokuDict = Odict.copy()
+                    return False
                 else:
                     return True
-        return False
-        
+
     def __Branch(self):
         Original = self.__SudokuDict.copy()
         Q = self.__SudokuDict.iteritems()
@@ -414,7 +415,7 @@ class Sudoku(object):
             if isinstance(kI[1],set):
                 break
         return Original,kI
-    
+
     def Solve(self, verbose=False):
         if self.CheckMinClue:
             if self.ValidateProblem:
@@ -426,8 +427,8 @@ class Sudoku(object):
                     if verbose: print 'OK, that didn\'t work. Let\'s use Brute Force Search...'
                     Nempty = self.__BruteForceSearch()
                 self.__SolutionDictToList()
-                
-                if Nempty:        
+
+                if Nempty:
                     if self.__Metric(self.__SolutionGrid) == 0:
                         if verbose: print "Solution Found!"
                         self.Solved = True
@@ -446,24 +447,24 @@ class Sudoku(object):
         else:
             if verbose: print "Problem does not have the minimum number of clue"
             return False
-    
+
     @property
     def CheckMinClue(self):
         if (81 - self.__ProblemList.count(0)) >= self.MinClue:
             return True
         else:
             return False
-                
+
 
     def __Metric(self,inGrid):
         SumRow = 0
-        for k in range(0,9): 
+        for k in range(0,9):
             SumRow += abs(sum(inGrid[k]) - 45)
-        
+
         SumCol = 0
         for l in range(0,9):
             SumCol += abs(sum(zip(*inGrid)[l]) - 45)
-    
+
         SumBox = 0
         for l in range(0,3):
             for k in range(0,3):
@@ -495,4 +496,4 @@ if __name__ == "__main__":
             telapsed = time.clock() - tstart
             print telapsed
             A.write_csv(outFN,verbose = True)
-            
+
