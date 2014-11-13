@@ -383,10 +383,10 @@ class Sudoku(object):
 
     def __BruteForceSearch(self):
         Odict, Qout = self.__Branch()
+        Iq = sorted(Odict[Qout])
 
-        for kq in range(len(Qout[1])):
-            Iq = Qout[1].pop()
-            self.__SudokuDict[Qout[0]] = Iq
+        for kq in range(len(Odict[Qout])):
+            self.__SudokuDict[Qout] = Iq[kq]
             self.__RemoveDuplicates()
             self.__FindUniqueValue()
             self.__DoubleValueStrategy()
@@ -405,15 +405,11 @@ class Sudoku(object):
 
     def __Branch(self):
         Original = self.__SudokuDict.copy()
-        Q = self.__SudokuDict.iteritems()
-        while True:
-            try:
-                kI = next(Q)
-            except StopIteration:
+        for kx in Original:
+            if isinstance(Original[kx],set):
+                kOut = kx
                 break
-            if isinstance(kI[1],set):
-                break
-        return Original,kI
+        return Original,kOut
 
     def Solve(self, verbose=False):
         if self.CheckMinClue:
