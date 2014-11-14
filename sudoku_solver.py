@@ -10,8 +10,8 @@ import sys
 from collections import *
 import time
 
-inFN = "sudoku3.txt"
-outFN = "sudoku3-sol.txt"
+inFN = "sudoku2.txt"
+outFN = "sudoku2-sol.txt"
 
 class Sudoku(object):
     __X = 'ABCDEFGHI'
@@ -233,8 +233,8 @@ class Sudoku(object):
     def __FindUniqueValue(self):
         Found = True
         while Found:
-            Found = False
             for kI in self.__SudokuIterables:
+                Found = False
                 for kx in kI:
                     NonUniqueList = []
                     for ki in kx:
@@ -341,6 +341,7 @@ class Sudoku(object):
                                     Removed = True
                                 if len(self.__SudokuDict[ky]) ==0:
                                     self.__SudokuDict[ky] = 0
+        self.__RemoveDuplicates()
 
     def __CountEmptyCell(self):
         k = 0
@@ -382,14 +383,16 @@ class Sudoku(object):
             return False
 
     def __BruteForceSearch(self):
-        Odict, Qout = self.__Branch()
-        Iq = sorted(Odict[Qout])
+        Odict = self.__SudokuDict.copy()
+        for key, value in Odict.iteritems():
+            if isinstance(value,set):
+                break
+        Iq = sorted(value)
 
-        for kq in range(len(Odict[Qout])):
-            self.__SudokuDict[Qout] = Iq[kq]
+        for kq in Iq:
+            self.__SudokuDict[key] = kq
             self.__RemoveDuplicates()
             self.__FindUniqueValue()
-            self.__DoubleValueStrategy()
             if self.__CountEmptyCell() == 0:
                 self.__SolutionDictToList()
                 if self.__Metric(self.__SolutionGrid) == 0:
@@ -402,14 +405,6 @@ class Sudoku(object):
                 else:
                     return True
         return False
-
-    def __Branch(self):
-        Original = self.__SudokuDict.copy()
-        for kx in Original:
-            if isinstance(Original[kx],set):
-                kOut = kx
-                break
-        return Original,kOut
 
     def Solve(self, verbose=False):
         if self.CheckMinClue:
@@ -449,7 +444,6 @@ class Sudoku(object):
             return True
         else:
             return False
-
 
     def __Metric(self,inGrid):
         SumRow = 0
